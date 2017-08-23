@@ -76,9 +76,9 @@ WiFiClientSecure client;
 //#include "Printable.h"
 
 void initTempSensors() {
-#ifdef DEBUG
+	#ifdef DEBUG
 	Serial.println("Init Dallas Temperature Control Library ");
-#endif
+	#endif
 
 	// Start up the temperatura library 
 	sensors.begin();
@@ -86,7 +86,7 @@ void initTempSensors() {
 	// Grab a count of devices on the wire
 	numberOfDevices = sensors.getDeviceCount();
 
-#ifdef DEBUG
+	#ifdef DEBUG
 	// locate devices on the bus
 	Serial.print("Locating devices...");
 	Serial.print("Found ");
@@ -99,7 +99,7 @@ void initTempSensors() {
 		Serial.println("ON");
 	else
 		Serial.println("OFF");
-#endif
+	#endif
 
 
 	// Loop through each device, print out address
@@ -109,88 +109,34 @@ void initTempSensors() {
 		if (sensors.getAddress(tempDeviceAddress, i))
 		{
 
-#ifdef DEBUG
+	#ifdef DEBUG
 			Serial.print("Found device ");
 			Serial.print(i, DEC);
 			Serial.print("Setting resolution to ");
 			Serial.println(TEMPERATURE_PRECISION, DEC);
-#endif
+	#endif
 
 			// set the resolution to TEMPERATURE_PRECISION bit (Each Dallas/Maxim device is capable of several different resolutions)
 			sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
 
-#ifdef DEBUG
+	#ifdef DEBUG
 			Serial.print("Resolution actually set to: ");
 			Serial.print(sensors.getResolution(tempDeviceAddress), DEC);
 			Serial.println();
-#endif
+	#endif
 
 
 		}
 		else {
 
-#ifdef DEBUG
+	#ifdef DEBUG
 			Serial.print("Found ghost device at ");
 			Serial.print(i, DEC);
 			Serial.print(" but could not detect address. Check power and cabling");
-#endif
+	#endif
 
 		}
 	}
-
-
-}
-
-void setup() {
-	//MyWiFiManager wifiManager;
-
-	Serial.begin(115200);
-
-	//sserial.begin(9600);
-
-	//wifiManager.setTimeout(15);
-	//wifiManager.init();
-	//wifiManager.setAPCallback(configModeCallback);
-	//wifiManager.setSaveConfigCallback(saveConfigCallback);
-
-	delay(2000);
-
-	MDNS.begin("FridgeSaverMonitor");
-
-	OTASetup();
-#ifdef DEBUG_ENABLED
-	Debug.begin("FridgeSaverMonitor");
-	Debug.setResetCmdEnabled(true);
-	Debug.showTime(true);
-#ifdef DEBUG_SERIAL
-	Debug.showColors(false);
-	Debug.setSerialEnabled(true);
-#else
-	Debug.showColors(true);
-#endif
-#endif
-
-	NTP.begin(NTP_SERVER, TIMEZONE, true);
-
-
-
-
-#ifdef DEBUG
-	Serial.begin(115200);
-#endif
-
-	initTempSensors();
-
-#ifdef DEBUG
-	Serial.println("Compiled: " __DATE__ ", " __TIME__ ", " __VERSION__);
-#endif
-
-	// set the current time manualy  (will can improve it, using the NTP )
-	//setTime(10, 16, 00, 27, 07, 2017);  
-
-
-	sensors.setWaitForConversion(false);  // makes it async
-
 
 	delay(2000);
 	sensors.setWaitForConversion(false);  // makes it async
@@ -236,8 +182,50 @@ void setup() {
 
 
 
+}
 
+void initRemoteDebug() {
+	#ifdef DEBUG_ENABLED
+	Debug.begin("FridgeSaverMonitor");
+	Debug.setResetCmdEnabled(true);
+	Debug.showTime(true);
+		#ifdef DEBUG_SERIAL
+		Debug.showColors(false);
+		Debug.setSerialEnabled(true);
+		#else
+		Debug.showColors(true);
+		#endif
+	#endif
+}
 
+void setup() {
+	//MyWiFiManager wifiManager;
+
+	Serial.begin(115200);
+
+	//sserial.begin(9600);
+
+	//wifiManager.setTimeout(15);
+	//wifiManager.init();
+	//wifiManager.setAPCallback(configModeCallback);
+	//wifiManager.setSaveConfigCallback(saveConfigCallback);
+
+	delay(2000);
+
+	MDNS.begin("FridgeSaverMonitor");
+
+	OTASetup();
+
+	initRemoteDebug();
+
+	NTP.begin(NTP_SERVER, TIMEZONE, true);
+	
+	initTempSensors();
+
+#ifdef DEBUG
+	Serial.println("Compiled: " __DATE__ ", " __TIME__ ", " __VERSION__);
+#endif
+	
 	// FAN control we will update to control from the could, currently there is a switch on pin 10 to disable the FAN 
 	pinMode(D3, INPUT_PULLUP);
 	analogWrite(D1, 0);
@@ -248,22 +236,6 @@ void setup() {
 #ifdef EMONLIB
 	emon1.current(A0, 3.05);             // Current: input pin, calibration.
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 
