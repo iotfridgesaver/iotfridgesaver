@@ -14,7 +14,7 @@
 
 
 //#include <TimeLib.h>  
-  
+
 // Temperature
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -34,7 +34,7 @@ EnergyMonitor emon1;                   // Create an instance
 
 
 // variables to automatically allocate the thermometer positions.
-float temperatures[4]= {29.2 ,5.12,-19.12,33.12};
+float temperatures[4] = { 29.2 ,5.12,-19.12,33.12 };
 byte tempOut_tposition;               // position of the sensor that measure the external temperature from the front of the fridge.
 byte tempInt_tposition;               // position of the sensor that measure the external temperature from the back  of the fridge.
 byte tempFri_tposition;               // position of the sensor that measure the internal temperature of the fridge.
@@ -75,6 +75,71 @@ WiFiClientSecure client;
 //#include "WString.h"
 //#include "Printable.h"
 
+void initTempSensors() {
+#ifdef DEBUG
+	Serial.println("Init Dallas Temperature Control Library ");
+#endif
+
+	// Start up the temperatura library 
+	sensors.begin();
+
+	// Grab a count of devices on the wire
+	numberOfDevices = sensors.getDeviceCount();
+
+#ifdef DEBUG
+	// locate devices on the bus
+	Serial.print("Locating devices...");
+	Serial.print("Found ");
+	Serial.print(numberOfDevices, DEC);
+	Serial.println(" devices.");
+
+	// report parasite power requirements
+	Serial.print("Parasite power is: ");
+	if (sensors.isParasitePowerMode())
+		Serial.println("ON");
+	else
+		Serial.println("OFF");
+#endif
+
+
+	// Loop through each device, print out address
+	for (int i = 0; i < numberOfDevices; i++)
+	{
+		// Search the wire for address
+		if (sensors.getAddress(tempDeviceAddress, i))
+		{
+
+#ifdef DEBUG
+			Serial.print("Found device ");
+			Serial.print(i, DEC);
+			Serial.print("Setting resolution to ");
+			Serial.println(TEMPERATURE_PRECISION, DEC);
+#endif
+
+			// set the resolution to TEMPERATURE_PRECISION bit (Each Dallas/Maxim device is capable of several different resolutions)
+			sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
+
+#ifdef DEBUG
+			Serial.print("Resolution actually set to: ");
+			Serial.print(sensors.getResolution(tempDeviceAddress), DEC);
+			Serial.println();
+#endif
+
+
+		}
+		else {
+
+#ifdef DEBUG
+			Serial.print("Found ghost device at ");
+			Serial.print(i, DEC);
+			Serial.print(" but could not detect address. Check power and cabling");
+#endif
+
+		}
+	}
+
+
+}
 
 void setup() {
 	//MyWiFiManager wifiManager;
@@ -111,138 +176,77 @@ void setup() {
 
 
 #ifdef DEBUG
-  Serial.begin(115200);
+	Serial.begin(115200);
 #endif
+
+	initTempSensors();
 
 #ifdef DEBUG
-  Serial.println("Init Dallas Temperature Control Library ");
+	Serial.println("Compiled: " __DATE__ ", " __TIME__ ", " __VERSION__);
 #endif
 
-  // Start up the temperatura library 
-  sensors.begin();
-    
-  // Grab a count of devices on the wire
-  numberOfDevices = sensors.getDeviceCount();
-  
-#ifdef DEBUG
-  // locate devices on the bus
-  Serial.print("Locating devices...");
-  Serial.print("Found ");
-  Serial.print(numberOfDevices, DEC);
-  Serial.println(" devices.");
+	// set the current time manualy  (will can improve it, using the NTP )
+	//setTime(10, 16, 00, 27, 07, 2017);  
 
-  // report parasite power requirements
-  Serial.print("Parasite power is: "); 
-  if (sensors.isParasitePowerMode())
-	  Serial.println("ON");
-  else 
-	  Serial.println("OFF");
-#endif
 
-  
-  // Loop through each device, print out address
-  for(int i=0;i<numberOfDevices; i++)
-  {
-    // Search the wire for address
-    if(sensors.getAddress(tempDeviceAddress, i))
-  {
+	sensors.setWaitForConversion(false);  // makes it async
 
-#ifdef DEBUG
-    Serial.print("Found device ");
-    Serial.print(i, DEC);
-    Serial.print("Setting resolution to ");
-    Serial.println(TEMPERATURE_PRECISION, DEC);
-#endif
-    
-    // set the resolution to TEMPERATURE_PRECISION bit (Each Dallas/Maxim device is capable of several different resolutions)
-    sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
-    
-#ifdef DEBUG
-    Serial.print("Resolution actually set to: ");
-    Serial.print(sensors.getResolution(tempDeviceAddress), DEC); 
-    Serial.println();
-#endif
 
-    
-  }else{
+	delay(2000);
+	sensors.setWaitForConversion(false);  // makes it async
+	sensors.requestTemperatures();
+	delay(1000);
 
-#ifdef DEBUG
-    Serial.print("Found ghost device at ");
-    Serial.print(i, DEC);
-    Serial.print(" but could not detect address. Check power and cabling");
-#endif
 
-  }
-  }
+	//  script to automatically allocate the postion of each sensor based on their temperature
+	int max_i = 0;
+	temperatures[0] = sensors.getTempCByIndex(0);
+	temperatures[1] = sensors.getTempCByIndex(1);
+	temperatures[2] = sensors.getTempCByIndex(2);
+	temperatures[3] = sensors.getTempCByIndex(3);
 
+	max_i = MaxValue();
+	tempInt_tposition = max_i;
+	temperatures[max_i] = -100;
+
+	max_i = MaxValue();
+	tempOut_tposition = max_i;
+	temperatures[max_i] = -100;
+
+	max_i = MaxValue();
+	tempFri_tposition = max_i;
+	temperatures[max_i] = -100;
+
+	max_i = MaxValue();
+	tempFre_tposition = max_i;
+	//  temperatures[max_i]=-100;
 
 
 #ifdef DEBUG
-  Serial.println( "Compiled: " __DATE__ ", " __TIME__ ", " __VERSION__);
-#endif
-  
-  // set the current time manualy  (will can improve it, using the NTP )
-  //setTime(10, 16, 00, 27, 07, 2017);  
-    
-  
-  sensors.setWaitForConversion(false);  // makes it async
+	Serial.print("Pos tempInt: ");
+	Serial.println(tempInt_tposition);
+	Serial.print("Pos tempOut: ");
+	Serial.println(tempOut_tposition);
+	Serial.print("Pos tempFri: ");
+	Serial.println(tempFri_tposition);
+	Serial.print("Pos tempFre: ");
+	Serial.println(tempFre_tposition);
 
-  
-    delay(2000);
-    sensors.setWaitForConversion(false);  // makes it async
-    sensors.requestTemperatures();
-    delay(1000);
-
-
- //  script to automatically allocate the postion of each sensor based on their temperature
-  int max_i = 0;
-  temperatures[0]= sensors.getTempCByIndex(0);
-  temperatures[1]= sensors.getTempCByIndex(1);
-  temperatures[2]= sensors.getTempCByIndex(2);
-  temperatures[3]= sensors.getTempCByIndex(3);
-  
-  max_i = MaxValue();
-  tempInt_tposition= max_i;
-  temperatures[max_i]=-100;
-
-  max_i = MaxValue();
-  tempOut_tposition= max_i;
-  temperatures[max_i]=-100;
-
-  max_i = MaxValue();
-  tempFri_tposition= max_i;
-  temperatures[max_i]=-100;
-
-  max_i = MaxValue();
-  tempFre_tposition= max_i;
-//  temperatures[max_i]=-100;
-
-
-#ifdef DEBUG
-  Serial.print("Pos tempInt: ");
-  Serial.println(tempInt_tposition);
-  Serial.print("Pos tempOut: ");
-  Serial.println(tempOut_tposition);
-  Serial.print("Pos tempFri: ");
-  Serial.println(tempFri_tposition);
-  Serial.print("Pos tempFre: ");
-  Serial.println(tempFre_tposition);
-  
 #endif
 
 
 
 
 
-  // FAN control we will update to control from the could, currently there is a switch on pin 10 to disable the FAN 
-  pinMode ( D3, INPUT_PULLUP );
-  analogWrite(D1, 0);
-  // FAN control
+	// FAN control we will update to control from the could, currently there is a switch on pin 10 to disable the FAN 
+	pinMode(D3, INPUT_PULLUP);
+	analogWrite(D1, 0);
+	// FAN control
 
 
-  // Consumption calibration
+	// Consumption calibration
 #ifdef EMONLIB
-  emon1.current(A0, 3.05);             // Current: input pin, calibration.
+	emon1.current(A0, 3.05);             // Current: input pin, calibration.
 #endif
 
 
@@ -271,152 +275,153 @@ void loop() {
 	const long period_burst = 15000;  // 30000 mean that we will ship each 60 seconds
 
 
- 
-  String date = "";
-  
-  date = String(year())
-         + '-' + (month() < 10 ? '0' + String(month()) : String(month()))
-         + '-' + (day() < 10 ? '0' + String(day()) : String(day()))
-         + ' ' + (hour() < 10 ? '0' + String(hour()) : String(hour()))
-         + ':' + (minute() < 10 ? '0' + String(minute()) : String(minute()))
-         + ':' + (second() < 10 ? '0' + String(second()) : String(second()));
+
+	String date = "";
+
+	date = String(year())
+		+ '-' + (month() < 10 ? '0' + String(month()) : String(month()))
+		+ '-' + (day() < 10 ? '0' + String(day()) : String(day()))
+		+ ' ' + (hour() < 10 ? '0' + String(hour()) : String(hour()))
+		+ ':' + (minute() < 10 ? '0' + String(minute()) : String(minute()))
+		+ ':' + (second() < 10 ? '0' + String(second()) : String(second()));
 
 
- // burst timer for the JSON 
-unsigned long currentMillis = millis();
-  if (currentMillis - previousburst >= period_burst ) {
-    // save the last time you blinked
-    previousburst = currentMillis;
-    burst=!burst;
-    // if true we send the JSON if not we just request the temperature, to be ready for the next burst of information
-    if (burst==true) {
-      
-      
+	// burst timer for the JSON 
+	unsigned long currentMillis = millis();
+	if (currentMillis - previousburst >= period_burst) {
+		// save the last time you blinked
+		previousburst = currentMillis;
+		burst = !burst;
+		// if true we send the JSON if not we just request the temperature, to be ready for the next burst of information
+		if (burst == true) {
+
+
 #ifdef DEBUG
-  Serial.print("Fecha: ");
-  Serial.println(date);
+			Serial.print("Fecha: ");
+			Serial.println(date);
 #endif
 
 
-// convert float to string
-  dtostrf(sensors.getTempCByIndex(tempOut_tposition), 3,2, outstr);
-  String tempOut = outstr;
-  
-  dtostrf(sensors.getTempCByIndex(tempInt_tposition), 3,2, outstr);
-  String tempInt = outstr;
+			// convert float to string
+			dtostrf(sensors.getTempCByIndex(tempOut_tposition), 3, 2, outstr);
+			String tempOut = outstr;
 
-  dtostrf(sensors.getTempCByIndex(tempFri_tposition), 3,2, outstr);
-  String tempFri = outstr;
-  
-  dtostrf(sensors.getTempCByIndex(tempFre_tposition), 3,2, outstr);
-  String tempFre = outstr;
+			dtostrf(sensors.getTempCByIndex(tempInt_tposition), 3, 2, outstr);
+			String tempInt = outstr;
+
+			dtostrf(sensors.getTempCByIndex(tempFri_tposition), 3, 2, outstr);
+			String tempFri = outstr;
+
+			dtostrf(sensors.getTempCByIndex(tempFre_tposition), 3, 2, outstr);
+			String tempFre = outstr;
 
 #ifdef EMONLIB
-  double Irms = emon1.calcIrms(1480);  // Calculate Irms only
-  dtostrf((Irms*235.0), 3,2, outstr);   // Apparent Powe 
-  String consumption = outstr;
+			double Irms = emon1.calcIrms(1480);  // Calculate Irms only
+			dtostrf((Irms*235.0), 3, 2, outstr);   // Apparent Powe 
+			String consumption = outstr;
 #endif
 
 
-String timeFan = "0";
+			String timeFan = "0";
 
-  // we active the fan, only if the compressor is on (this mean a consumption is over 60W => Irms> 60/235 = 0.255 
-  
+			// we active the fan, only if the compressor is on (this mean a consumption is over 60W => Irms> 60/235 = 0.255 
+
 #ifdef EMONLIB
-  if (digitalRead(D3) == 1 && Irms>0.255) {
+			if (digitalRead(D3) == 1 && Irms > 0.255) {
 #else
-  if (digitalRead(D3) == 1) {
+			if (digitalRead(D3) == 1) {
 #endif
-      analogWrite(D1, 850);
-          timeFan = "1";
-  } else {
-  analogWrite(D1, 0);
-  }
-  
-
-  peticionPut(date,
-             tempOut,
-             tempInt,
-             tempFri,
-             tempFre,
-             consumption,
-             timeFan);
-         
-      
-      }
-   
-    else {
-
-      sensors.requestTemperatures();
-      
-    }
-    }
-    
+				analogWrite(D1, 850);
+				timeFan = "1";
+			}
+			else {
+				analogWrite(D1, 0);
+			}
 
 
- }
+			peticionPut(date,
+				tempOut,
+				tempInt,
+				tempFri,
+				tempFre,
+				consumption,
+				timeFan);
+
+
+		}
+
+		else {
+
+			sensors.requestTemperatures();
+
+		}
+	}
+
+
+
+}
 
 
 /********** FUNCIÓN PARA HACER LA PETICIÓN PUT **********/
 
 void peticionPut(String date,
-                 String tempOut,
-                 String tempInt,
-                 String tempFri,
-                 String tempFre,
-                 String consumption,
-                 String timeFan)
+	String tempOut,
+	String tempInt,
+	String tempFri,
+	String tempFre,
+	String consumption,
+	String timeFan)
 {
 
 
 
-String payload ="{\"\
+	String payload = "{\"\
 tempOut\":";
-payload += tempOut;
-payload +=",\"\
+	payload += tempOut;
+	payload += ",\"\
 tempInt\":";
-payload += tempInt;
-payload +=",\"\
+	payload += tempInt;
+	payload += ",\"\
 tempFri\":";
-payload += tempFri;
-payload +=",\"\
+	payload += tempFri;
+	payload += ",\"\
 tempFre\":";
-payload += tempFre;
-payload +=",\"\
+	payload += tempFre;
+	payload += ",\"\
 consumption\":";
-payload += consumption;
-payload +=",\"\
+	payload += consumption;
+	payload += ",\"\
 timeFan\":";
-payload += timeFan;
-payload += "}\
+	payload += timeFan;
+	payload += "}\
 ";
 
-  // PUT JSON
-  String toSend = 
-    "{\"command\":\"Send Firebase\",\"\
+	// PUT JSON
+	String toSend =
+		"{\"command\":\"Send Firebase\",\"\
 payload\":";
-  toSend += payload;
-//  toSend += "}\r\n";
-  toSend += "}\r";
+	toSend += payload;
+	//  toSend += "}\r\n";
+	toSend += "}\r";
 
 
-// sending JSON string to the ESP using soft serial port.
-//  sSerial.println(toSend);
+	// sending JSON string to the ESP using soft serial port.
+	//  sSerial.println(toSend);
 
-//JsonObject& root = jsonBuffer.parseObject(toSend);
+	//JsonObject& root = jsonBuffer.parseObject(toSend);
 
-  
-  String string_buffer;
-  DynamicJsonBuffer jsonBuffer(200);
+
+	String string_buffer;
+	DynamicJsonBuffer jsonBuffer(200);
 #ifdef SIMULATE
-  delay(5000);
-  String macAddress = WiFi.macAddress();
+	delay(5000);
+	String macAddress = WiFi.macAddress();
 #ifdef DEBUG_ENABLED
-  if (Debug.isActive(Debug.INFO))
-    Debug.printf("MAC Address: %s\n", macAddress.c_str());
+	if (Debug.isActive(Debug.INFO))
+		Debug.printf("MAC Address: %s\n", macAddress.c_str());
 #endif
-  string_buffer = 
-    "{\"command\":\"Send Firebase\",\"\
+	string_buffer =
+		"{\"command\":\"Send Firebase\",\"\
 payload\":{\"\
 tempOut\":34.5,\"\
 tempInt\":29.0,\"\
@@ -425,40 +430,38 @@ tempFre\":-18.0,\"\
 consumption\":4.0,\"\
 timeFan\":0}\
 }";
-  if (true) {
+	if (true) {
 #else
-//  if (sserial.available()) {
-    if (true) {
-//    string_buffer = sserial.readStringUntil('\n');
-    string_buffer = toSend;
+	//  if (sserial.available()) {
+	if (true) {
+		//    string_buffer = sserial.readStringUntil('\n');
+		string_buffer = toSend;
 
 #endif
 
-    JsonObject& root = jsonBuffer.parseObject(string_buffer);
+		JsonObject& root = jsonBuffer.parseObject(string_buffer);
 
 #ifdef DEBUG_ENABLED
-    if (Debug.isActive(Debug.INFO)) {
-      Debug.print("JSON: ");
-      root.prettyPrintTo(Debug);
-      Debug.println();
-    }
+		if (Debug.isActive(Debug.INFO)) {
+			Debug.print("JSON: ");
+			root.prettyPrintTo(Debug);
+			Debug.println();
+		}
 #endif
 
-    if (!root.success()) {
+		if (!root.success()) {
 #ifdef DEBUG_ENABLED
-      if (Debug.isActive(Debug.WARNING)) {
-        Debug.println("JSON: parseObject() failed");
-      }
+			if (Debug.isActive(Debug.WARNING)) {
+				Debug.println("JSON: parseObject() failed");
+			}
 #endif
-      return;
-    }
+			return;
+		}
 
-    processJsonMessage(root);
-
-
-  }
+		processJsonMessage(root);
 
 
+	}
 
 
 
@@ -483,7 +486,9 @@ timeFan\":0}\
 
 
 
- 
+
+
+
 #ifdef DEBUG_ENABLED
 	Debug.handle();
 #endif
@@ -498,21 +503,21 @@ timeFan\":0}\
 
 
 // funtion that provice the position of the max value on the array temperatures.
-int MaxValue() {       
+int MaxValue() {
 
-  float max_v = -90;
-  int max_i = 0;
+	float max_v = -90;
+	int max_i = 0;
 
-  for ( int i = 0; i < sizeof(temperatures)/sizeof(temperatures[0]); i++ )
-  {
-    if ( temperatures[i] > max_v )
-    {
-      max_v = temperatures[i];
-      max_i = i;
-    }
-  }
-return max_i;
-    
+	for (int i = 0; i < sizeof(temperatures) / sizeof(temperatures[0]); i++)
+	{
+		if (temperatures[i] > max_v)
+		{
+			max_v = temperatures[i];
+			max_i = i;
+		}
+	}
+	return max_i;
+
 }
 
 
