@@ -4,17 +4,13 @@
 #include <DallasTemperature.h>          // https://github.com/milesburton/Arduino-Temperature-Control-Library
 #include <ArduinoOTA.h>
 #include "OTAhelper.h"
+#include "ConfigData.h"
 
 #define EMONLIB
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
 EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
 #endif
-
-#define DEBUG
-
-const char* WIFI_SSID = "NOMBRE_DE_MI_RED";
-const char* WIFI_PASS = "CONTRASEÑA";
 
 bool OTAupdating;                       ///< Verdadero si se está haciendo una actualización OTA
 
@@ -32,13 +28,7 @@ OneWire oneWire (ONE_WIRE_BUS);         ///< Instancia OneWire para comunicar co
 DallasTemperature sensors (&oneWire);   ///< Pasar el bus de datos como referencia
 const int minTemperature = -100;        ///< Temperatura mínima válida
 
-int fanOn = 0;
-
-#define MEASURE_PERIOD 30000           ///< Periodo de medida de temperatura y consumo, y envío de los datos al servicio en la nube
-
-static const char* serverAddress = "192.168.5.18";
-static const char* writeApiKey = "0e58ebf51f6436c663ec28bb62d5c547";
-
+int fanOn = 0;                          ///< Velocidad del ventilador
 
 /********************************************//**
 *  Función para buscar la posiciñon del valor máximo en el array de temperaturas
@@ -93,7 +83,7 @@ void sortSensors () {
     //  temperatures[max_i]= minTemperature;
 
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
     Serial.print ("Posicion sensor radiador: ");
     Serial.println (tempRadiator_idx);
     Serial.print ("Posicion sensor ambiente: ");
@@ -116,7 +106,7 @@ uint8_t initTempSensors () {
     DeviceAddress tempDeviceAddress;    ///< Almacenamiento temporal para las direcciones encontradas
     uint8_t numberOfDevices;            ///< Número de sensores encontrados
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
     Serial.println ("Init Dallas Temperature Control Library");
 #endif
 
@@ -126,7 +116,7 @@ uint8_t initTempSensors () {
     // Preguntar por el número de sensores detectados
     numberOfDevices = sensors.getDeviceCount ();
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
     Serial.print ("Locating devices...");
     Serial.print ("Found ");
     Serial.print (numberOfDevices, DEC);
@@ -142,7 +132,7 @@ uint8_t initTempSensors () {
     // Ajustar la precisión de todos los sensores
     sensors.setResolution (TEMPERATURE_PRECISION);
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
     // Imprime la dirección de cada sensor
     for (int i = 0; i < numberOfDevices; i++) {
         // Search the wire for address
@@ -232,9 +222,6 @@ void setup () {
 *  Función para obtener la medida de consumo en Vatios
 ***********************************************/
 double getPower () {
-    const int fanThreshold = 60;
-    const int mainsVoltage = 230;
-
     double watts;
 
 #ifdef EMONLIB
@@ -272,9 +259,9 @@ int8_t sendDataEmonCMS (float tempRadiator,
     char* tempStr; ///< Cadena temporal para almacenar los numeros como texto
 
     // Conecta al servidor
-    if (!client.connect (serverAddress, 443)) {
-#ifdef DEBUG
-        Serial.printf ("Error al conectar al servidor EmonCMS en %s", serverAddress);
+    if (!client.connect (emonCMSserverAddress, 443)) {
+#ifdef DEBUG_ENABLED
+        Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress);
 #endif
         return -1; // Error de conexión
     }
@@ -292,12 +279,12 @@ int8_t sendDataEmonCMS (float tempRadiator,
     dtostrf (watts, 3, 3, tempStr);
     httpRequest += "\"watts\":" + String (tempStr) + ",";
     httpRequest += "\"watts\":" + fanOn;
-    httpRequest += ",}&apikey=" + String (writeApiKey) + " HTTP/1.1\r\n";
-    httpRequest += "Host: " + String (serverAddress) + "\r\n\r\n";
+    httpRequest += ",}&apikey=" + String (emonCMSwriteApiKey) + " HTTP/1.1\r\n";
+    httpRequest += "Host: " + String (emonCMSserverAddress) + "\r\n\r\n";
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
     Serial.printf ("%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
-#endif \\ DEBUG
+#endif \\ DEBUG_ENABLED
 
     // Envia la peticion
     client.print (httpRequest);
@@ -306,7 +293,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     timeout = millis ();
     while (!client.available ()) {
         if (millis () - timeout > maxTimeout) {
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
             Serial.printf ("%s: Firebase client Timeout !", __FUNCTION__);
 #endif
             client.stop ();
@@ -317,14 +304,14 @@ int8_t sendDataEmonCMS (float tempRadiator,
     // Recupera la respuesta
     while (client.available ()) {
         String line = client.readStringUntil ('\n');
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
         Serial.printf ("%s: Response: %s\n", __FUNCTION__, line.c_str ());
 #endif
     }
 
     client.stop (); // Desconecta el cliente
 
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
     Serial.printf ("%s: Data sent !!!\n", __FUNCTION__);
 #endif // DEBUG
 
