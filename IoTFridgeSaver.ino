@@ -20,7 +20,7 @@ uint8_t tempAmbient_idx;                ///< Índice del sensor que mide la temp
 uint8_t tempRadiator_idx;               ///< Índice del sensor que mide la temperatura del radiador del frigorífico
 uint8_t tempFridge_idx;                 ///< Índice del sensor que mide la temperatura del frigorífico
 uint8_t tempFreezer_idx;                ///< Índice del sensor que mide la temperatura del congelador
-uint8_t numberOfDevices = 0;            ///< Número de sensores detectados. Deber�a ser igual a NUMBER_OF_SENSORS
+uint8_t numberOfDevices = 0;            ///< Número de sensores detectados. Debería ser igual a NUMBER_OF_SENSORS
 
 #define ONE_WIRE_BUS D5                 ///< Pin de datos para los sensores de temperatura. D5 = GPIO16
 #define TEMPERATURE_PRECISION 11        ///< Número de bits con los que se calcula la temperatura
@@ -52,7 +52,7 @@ int MaxValue (float temperatures[]) {
 /********************************************//**
 *  Funcion para ordenar los sensores de temperatura
 
-*  Ordena, de mayor a menor, los �ndices de los sensores según la secuencia
+*  Ordena, de mayor a menor, los índices de los sensores según la secuencia
 *       Radiador, Ambiente, Frigorífico, Congelador
 ***********************************************/
 void sortSensors () {
@@ -129,11 +129,11 @@ uint8_t initTempSensors () {
         Serial.println ("OFF");
 #endif
 
-    // Ajustar la precisi�n de todos los sensores
+    // Ajustar la precisión de todos los sensores
     sensors.setResolution (TEMPERATURE_PRECISION);
 
 #ifdef DEBUG_ENABLED
-    // Imprime la direcci�n de cada sensor
+    // Imprime la dirección de cada sensor
     for (int i = 0; i < numberOfDevices; i++) {
         // Search the wire for address
         if (sensors.getAddress (tempDeviceAddress, i)) {
@@ -263,7 +263,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
 #ifdef DEBUG_ENABLED
         Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress);
 #endif
-        return -1; // Error de conexi�n
+        return -1; // Error de conexión
     }
 
     // Compone la peticion HTTP
