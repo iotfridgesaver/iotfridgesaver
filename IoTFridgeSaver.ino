@@ -12,26 +12,26 @@
 EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
 #endif
 
-bool OTAupdating;                       ///< Verdadero si se está haciendo una actualización OTA
+bool OTAupdating;                       ///< Verdadero si se estÃ¡ haciendo una actualizaciÃ³n OTA
 
-#define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
+#define NUMBER_OF_SENSORS 4             ///< NÃºmero de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
-uint8_t tempAmbient_idx;                ///< índice del sensor que mide la temperatura ambiente
-uint8_t tempRadiator_idx;               ///< índice del sensor que mide la temperatura del radiador del frigorífico
-uint8_t tempFridge_idx;                 ///< índice del sensor que mide la temperatura del frigorífico
-uint8_t tempFreezer_idx;                ///< índice del sensor que mide la temperatura del congelador
-uint8_t numberOfDevices = 0;            ///< número de sensores detectados. Debería ser igual a NUMBER_OF_SENSORS
+uint8_t tempAmbient_idx;                ///< Ãndice del sensor que mide la temperatura ambiente
+uint8_t tempRadiator_idx;               ///< Ãndice del sensor que mide la temperatura del radiador del frigorÃ­fico
+uint8_t tempFridge_idx;                 ///< Ãndice del sensor que mide la temperatura del frigorÃ­fico
+uint8_t tempFreezer_idx;                ///< Ãndice del sensor que mide la temperatura del congelador
+uint8_t numberOfDevices = 0;            ///< NÃºmero de sensores detectados. Deberï¿½a ser igual a NUMBER_OF_SENSORS
 
 #define ONE_WIRE_BUS D5                 ///< Pin de datos para los sensores de temperatura. D5 = GPIO16
-#define TEMPERATURE_PRECISION 11        ///< Número de bits con los que se calcula la temperatura
+#define TEMPERATURE_PRECISION 11        ///< NÃºmero de bits con los que se calcula la temperatura
 OneWire oneWire (ONE_WIRE_BUS);         ///< Instancia OneWire para comunicar con los sensores de temperatura
 DallasTemperature sensors (&oneWire);   ///< Pasar el bus de datos como referencia
-const int minTemperature = -100;        ///< Temperatura mínima válida
+const int minTemperature = -100;        ///< Temperatura mÃ­nima vÃ¡lida
 
 int fanOn = 0;                          ///< Velocidad del ventilador
 
 /********************************************//**
-*  Función para buscar la posiciñon del valor máximo en el array de temperaturas
+*  FunciÃ³n para buscar la posiciÃ³n del valor mÃ¡ximo en el array de temperaturas
 ***********************************************/
 int MaxValue (float temperatures[]) {
 
@@ -52,8 +52,8 @@ int MaxValue (float temperatures[]) {
 /********************************************//**
 *  Funcion para ordenar los sensores de temperatura
 
-*  Ordena, de mayor a menor, los índices de los sensores según la secuencia
-*       Radiador, Ambiente, Frigorífico, Congelador
+*  Ordena, de mayor a menor, los ï¿½ndices de los sensores segÃºn la secuencia
+*       Radiador, Ambiente, FrigorÃ­fico, Congelador
 ***********************************************/
 void sortSensors () {
     //sensors.setWaitForConversion (false);  // makes it async
@@ -100,11 +100,11 @@ void sortSensors () {
 
 
 /********************************************//**
-*  Funcion para iniciar los sensores de temperatura
+*  FunciÃ³n para iniciar los sensores de temperatura
 ***********************************************/
 uint8_t initTempSensors () {
     DeviceAddress tempDeviceAddress;    ///< Almacenamiento temporal para las direcciones encontradas
-    uint8_t numberOfDevices;            ///< Número de sensores encontrados
+    uint8_t numberOfDevices;            ///< NÃºmero de sensores encontrados
 
 #ifdef DEBUG_ENABLED
     Serial.println ("Init Dallas Temperature Control Library");
@@ -113,7 +113,7 @@ uint8_t initTempSensors () {
     // Inicializar el bus de los sensores de temperatura 
     sensors.begin ();
 
-    // Preguntar por el número de sensores detectados
+    // Preguntar por el nÃºmero de sensores detectados
     numberOfDevices = sensors.getDeviceCount ();
 
 #ifdef DEBUG_ENABLED
@@ -129,11 +129,11 @@ uint8_t initTempSensors () {
         Serial.println ("OFF");
 #endif
 
-    // Ajustar la precisión de todos los sensores
+    // Ajustar la precisiï¿½n de todos los sensores
     sensors.setResolution (TEMPERATURE_PRECISION);
 
 #ifdef DEBUG_ENABLED
-    // Imprime la dirección de cada sensor
+    // Imprime la direcciï¿½n de cada sensor
     for (int i = 0; i < numberOfDevices; i++) {
         // Search the wire for address
         if (sensors.getAddress (tempDeviceAddress, i)) {
@@ -198,7 +198,7 @@ void setup () {
     //Iniciar NTP
 
     // Control del ventilador
-    pinMode (D3, INPUT_PULLUP); // D3 = GPIO0. Botón para controlar la activación del ventilador
+    pinMode (D3, INPUT_PULLUP); // D3 = GPIO0. BotÃ³n para controlar la activaciÃ³n del ventilador
     analogWrite (D1, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
 
    // Iniciar el sensor de corriente
@@ -206,7 +206,7 @@ void setup () {
     emon1.current (A0, 3.05);             // Current: input pin, calibration.
 #endif
 
-    // Iniciar sensores de temperatura comprobando que el número de sensores es el necesario
+    // Iniciar sensores de temperatura comprobando que el nÃºmero de sensores es el necesario
     while (numberOfDevices != NUMBER_OF_SENSORS) {
         numberOfDevices = initTempSensors ();
         if (numberOfDevices != NUMBER_OF_SENSORS) {
@@ -215,11 +215,11 @@ void setup () {
         }
     }
 
-    sortSensors (); // Asignar los sensores automáticamente
+    sortSensors (); // Asignar los sensores automÃ¡ticamente
 }
 
 /********************************************//**
-*  Función para obtener la medida de consumo en Vatios
+*  FunciÃ³n para obtener la medida de consumo en Vatios
 ***********************************************/
 double getPower () {
     double watts;
@@ -244,7 +244,7 @@ double getPower () {
 }
 
 /********************************************//**
-*  Envía los datos a la plataforma de EmonCMS
+*  EnvÃ­a los datos a la plataforma de EmonCMS
 ***********************************************/
 int8_t sendDataEmonCMS (float tempRadiator,
                         float tempAmbient, 
@@ -263,7 +263,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
 #ifdef DEBUG_ENABLED
         Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress);
 #endif
-        return -1; // Error de conexión
+        return -1; // Error de conexiï¿½n
     }
 
     // Compone la peticion HTTP
