@@ -238,7 +238,21 @@ void setup() {
 #endif
 }
 
+void getTemperatures(float *temperatures) {
 
+	temperatures[0] = sensors.getTempCByIndex(tempOut_tposition);
+	temperatures[1] = sensors.getTempCByIndex(tempInt_tposition);
+	temperatures[2] = sensors.getTempCByIndex(tempFri_tposition);
+	temperatures[3] = sensors.getTempCByIndex(tempFre_tposition);
+}
+
+void getPower(double *watts) {
+
+#ifdef EMONLIB
+	*watts = emon1.calcIrms(1480)*230;  // Calculate Irms * V. Aparent power
+#endif
+
+}
 
 void loop() {
 	// burst variables
@@ -246,8 +260,11 @@ void loop() {
 	static uint32_t previousburst = 0;
 	const long period_burst = 15000;  // 30000 mean that we will ship each 60 seconds
 
+	static float temperatures[4];
+	double watts;
 
 
+	/*
 	String date = "";
 
 	date = String(year())
@@ -256,7 +273,7 @@ void loop() {
 		+ ' ' + (hour() < 10 ? '0' + String(hour()) : String(hour()))
 		+ ':' + (minute() < 10 ? '0' + String(minute()) : String(minute()))
 		+ ':' + (second() < 10 ? '0' + String(second()) : String(second()));
-
+	*/
 
 	// burst timer for the JSON 
 	unsigned long currentMillis = millis();
@@ -265,7 +282,7 @@ void loop() {
 		previousburst = currentMillis;
 		burst = !burst;
 		// if true we send the JSON if not we just request the temperature, to be ready for the next burst of information
-		if (burst == true) {
+		if (burst) {
 
 
 #ifdef DEBUG
@@ -273,33 +290,15 @@ void loop() {
 			Serial.println(date);
 #endif
 
-
-			// convert float to string
-			dtostrf(sensors.getTempCByIndex(tempOut_tposition), 3, 2, outstr);
-			String tempOut = outstr;
-
-			dtostrf(sensors.getTempCByIndex(tempInt_tposition), 3, 2, outstr);
-			String tempInt = outstr;
-
-			dtostrf(sensors.getTempCByIndex(tempFri_tposition), 3, 2, outstr);
-			String tempFri = outstr;
-
-			dtostrf(sensors.getTempCByIndex(tempFre_tposition), 3, 2, outstr);
-			String tempFre = outstr;
-
-#ifdef EMONLIB
-			double Irms = emon1.calcIrms(1480);  // Calculate Irms only
-			dtostrf((Irms*235.0), 3, 2, outstr);   // Apparent Powe 
-			String consumption = outstr;
-#endif
-
+			getTemperatures(temperatures);
+			getPower(&watts);
 
 			String timeFan = "0";
 
 			// we active the fan, only if the compressor is on (this mean a consumption is over 60W => Irms> 60/235 = 0.255 
 
 #ifdef EMONLIB
-			if (digitalRead(D3) == 1 && Irms > 0.255) {
+			if (digitalRead(D3) == 1 && irms > 0.255) {
 #else
 			if (digitalRead(D3) == 1) {
 #endif
@@ -311,13 +310,7 @@ void loop() {
 			}
 
 
-			peticionPut(date,
-				tempOut,
-				tempInt,
-				tempFri,
-				tempFre,
-				consumption,
-				timeFan);
+			//peticionPut(date,	tempOut, tempInt, tempFri, tempFre, consumption, timeFan);
 
 
 		}
