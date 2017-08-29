@@ -28,9 +28,6 @@ void MyWiFiManager::init() {
 
 String MyWiFiManager::getEmonCMSserverAddress () {
     const char * charStr = _emonCMSserverAddressCParam->getValue ();
-    /*Serial.printf ("*WM: server address: %s\n", charStr);
-    String value = ;
-    Serial.printf ("*WM: server address: %s\n", value.c_str());*/
     return String (charStr);
 }
 
@@ -40,12 +37,8 @@ String MyWiFiManager::getEmonCMSwriteApiKey () {
 }
 
 int MyWiFiManager::getMainsVoltage () {
-    int value = 0;
     const char * charStr = _mainsVoltageCParam->getValue ();
-    Serial.printf ("*WM: mainsVoltage: %s\n", charStr);
-    value = atoi (charStr);
-    Serial.printf ("*WM: mainsVoltage: %d\n", value);
-    return value;
+    return atoi (charStr);
 }
 
 MyWiFiManager::MyWiFiManager() : AsyncWiFiManager (new AsyncWebServer(80),new DNSServer()) {}
