@@ -3,34 +3,45 @@
 // 
 
 #include "WifiManagerSetup.h"
+extern const char *configFileName;
 
-extern String emonCMSserverAddress;  ///< Dirección del servidor EmonCMS
-extern String emonCMSwriteApiKey; 
-extern int mainsVoltage;
+//extern String emonCMSserverAddress;  ///< Dirección del servidor EmonCMS
+//extern String emonCMSwriteApiKey; 
+//extern int mainsVoltage;
 
 #define MAX_STRING_LENGTH 40
 extern bool configLoaded;
 
 void MyWiFiManager::init() {
-    resetSettings();
+    //resetSettings();
 
-    const char * serverName;
-    const char * apiKey;
-    char *  volt;
+    Serial.println ("1111");
+    Serial.printf ("Numero: %d", 2222);
+/*#ifdef DEBUG_ENABLED
+    Serial.printf ("emonCMSserverAddress1: %s\n", emonCMSserverAddress.c_str ());
+    Serial.printf ("emonCMSwriteApiKey1: %s\n", emonCMSwriteApiKey.c_str ());
+    Serial.printf ("mainsVoltage1: %d\n", mainsVoltage);
+#endif // DEBUG_ENABLED
+
+    String serverName;
+    String apiKey;
+    String volt;*/
         
-    if (configLoaded) {
-        serverName = emonCMSserverAddress.c_str ();
-        apiKey = emonCMSwriteApiKey.c_str ();
-        itoa(mainsVoltage, volt,10);
+    /*if (configLoaded) {
+        serverName = emonCMSserverAddress;
+        apiKey = emonCMSwriteApiKey;
+        char * tempStr;
+        tempStr = itoa (mainsVoltage, tempStr, 10);
+        volt = tempStr;
     } else {
         serverName = "cloud.iotfridgesaver.com";
         apiKey = "";
         volt = "230";
-    }
+    }*/
     
-    _emonCMSserverAddressCParam = new AsyncWiFiManagerParameter ("server", "EmonCMS server", serverName, MAX_STRING_LENGTH);
-    _emonCMSwriteApiKeyCParam = new AsyncWiFiManagerParameter ("apikey", "EmonCMS API key", apiKey, MAX_STRING_LENGTH);
-    _mainsVoltageCParam = new AsyncWiFiManagerParameter ("voltage", "Mains voltage", volt, 5);
+    _emonCMSserverAddressCParam = new AsyncWiFiManagerParameter ("server", "EmonCMS server", "clour.iotfridgesaver.com", MAX_STRING_LENGTH);
+    _emonCMSwriteApiKeyCParam = new AsyncWiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
+    _mainsVoltageCParam = new AsyncWiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
     setConnectTimeout(15);
     //setCustomHeadElement("<style>input[type='checkbox'] {width: initial;}</style>");
     addParameter(_emonCMSserverAddressCParam);

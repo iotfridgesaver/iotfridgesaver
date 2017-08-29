@@ -1,3 +1,4 @@
+#include "ConfigData.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <OneWire.h>
@@ -7,7 +8,6 @@
 #include "FS.h"
 #include "OTAhelper.h"
 #include "WifiManagerSetup.h"
-#include "ConfigData.h"
 
 #define EMONLIB
 #ifdef EMONLIB
@@ -35,6 +35,12 @@ int fanOn = 0;                          ///< Velocidad del ventilador
 
 bool shouldSaveConfig = false;          ///< Verdadero si WiFi Manager activa una configuración nueva
 bool configLoaded = false;
+
+String emonCMSserverAddress = "";  ///< Dirección del servidor EmonCMS
+String emonCMSwriteApiKey = ""; ///< API key del usuario
+int mainsVoltage = 230;       ///< Tensión de alimentación
+const char *configFileName = "/config.json";
+
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -206,7 +212,7 @@ void loadConfigData () {
     Serial.println ("Montando sistema de archivos...");
 
     if (SPIFFS.begin ()) {
-        Serial.println ("Sistema de archivos montado");
+        Serial.printf ("Sistema de archivos montado. Abriendo %s\n", configFileName);
         if (SPIFFS.exists (configFileName)) {
             //file exists, reading and loading
             Serial.printf ("Leyendo el archivo de configuración: %s\n", configFileName);
@@ -228,6 +234,12 @@ void loadConfigData () {
                     emonCMSserverAddress = json.get<String> ("emonCMSserver");
                     emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
                     mainsVoltage = json.get<int> ("mainsVoltage");
+
+#ifdef DEBUG_ENABLED
+                    Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str());
+                    Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
+                    Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
+#endif // DEBUG_ENABLED
                     
                     //strcpy (mqtt_port, json["mqtt_port"]);
                     //strcpy (blynk_token, json["blynk_token"]);
@@ -254,7 +266,28 @@ void loadConfigData () {
 }
 
 void saveConfigData () {
+    Serial.println ("saving config");
+    if (SPIFFS.begin ()) {
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject& json = jsonBuffer.createObject ();
+        json["emonCMSserver"] = emonCMSserverAddress;
+        json["emonCMSapiKey"] = emonCMSwriteApiKey;
+        json["mainsVoltage"] = mainsVoltage;
 
+        File configFile = SPIFFS.open (configFileName, "w");
+        if (!configFile) {
+            Serial.println ("Error al abrir el archivo de configuración");
+        }
+
+        json.prettyPrintTo (Serial);
+        Serial.println ();
+        json.printTo (configFile);
+        configFile.close ();
+    } else {
+        Serial.printf ("Error al montar el sistema de archivos");
+    }
+    SPIFFS.end ();
+    //end save
 }
 
 void startWifiManager (MyWiFiManager &wifiManager) {
@@ -270,9 +303,13 @@ void setup () {
     MyWiFiManager wifiManager;              ///< WiFi Manager. Configura los datos WiFi y otras configuraciones
 
     Serial.begin (115200);
+    // Control del ventilador
+    pinMode (D3, INPUT_PULLUP); // D3 = GPIO0. Botón para controlar la activación del ventilador
+    analogWrite (D1, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
 
 #ifdef WIFI_MANAGER
     //leer datos de la flash
+    configFileName = "\config.json";
     loadConfigData ();
 
     startWifiManager (wifiManager);
@@ -299,6 +336,12 @@ void setup () {
 #endif // WIFI_MANAGER
     Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP().toString().c_str());
 
+#ifdef DEBUG_ENABLED
+    Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
+    Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
+    Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
+#endif // DEBUG_ENABLED
+
     MDNS.begin ("FridgeSaverMonitor"); //Iniciar servidor MDNS para llamar al dispositivo como FridgeSaverMonitor.local
 
     OTASetup ();
@@ -307,9 +350,6 @@ void setup () {
 
     //Iniciar NTP
 
-    // Control del ventilador
-    pinMode (D3, INPUT_PULLUP); // D3 = GPIO0. Botón para controlar la activación del ventilador
-    analogWrite (D1, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
 
    // Iniciar el sensor de corriente
 #ifdef EMONLIB

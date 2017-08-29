@@ -23,6 +23,9 @@ protected:
     AsyncWiFiManagerParameter * _emonCMSserverAddressCParam;
     AsyncWiFiManagerParameter * _emonCMSwriteApiKeyCParam;
     AsyncWiFiManagerParameter * _mainsVoltageCParam;
+    /*String emonCMSserverAddress;
+    String emonCMSwriteApiKey;
+    int mainsVoltage;*/
 public:
 	MyWiFiManager();
 	void init();
