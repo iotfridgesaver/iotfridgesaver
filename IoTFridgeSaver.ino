@@ -3,6 +3,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>          // https://github.com/milesburton/Arduino-Temperature-Control-Library
 #include <ArduinoOTA.h>
+#include <ArduinoJson.h>
+#include "FS.h"
 #include "OTAhelper.h"
 #include "WifiManagerSetup.h"
 #include "ConfigData.h"
@@ -32,6 +34,7 @@ const int minTemperature = -100;        ///< Temperatura mínima válida
 int fanOn = 0;                          ///< Velocidad del ventilador
 
 bool shouldSaveConfig = false;          ///< Verdadero si WiFi Manager activa una configuración nueva
+bool configLoaded = false;
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -195,23 +198,69 @@ void getCustomData (MyWiFiManager &wifiManager) {
 
 }
 
-void saveData () {
+void loadConfigData () {
+    //clean FS, for testing
+    //SPIFFS.format();
+
+    //read configuration from FS json
+    Serial.println ("Montando sistema de archivos...");
+
+    if (SPIFFS.begin ()) {
+        Serial.println ("Sistema de archivos montado");
+        if (SPIFFS.exists (configFileName)) {
+            //file exists, reading and loading
+            Serial.printf ("Leyendo el archivo de configuración: %s\n", configFileName);
+            File configFile = SPIFFS.open (configFileName, "r");
+            if (configFile) {
+                Serial.println ("Archivo de configuración abierto");
+                size_t size = configFile.size ();
+                // Allocate a buffer to store contents of the file.
+                std::unique_ptr<char[]> buf (new char[size]);
+
+                configFile.readBytes (buf.get (), size);
+                DynamicJsonBuffer jsonBuffer;
+                JsonObject& json = jsonBuffer.parseObject (buf.get ());
+                json.printTo (Serial);
+                if (json.success ()) {
+                    Serial.println ("\nparsed json");
+
+                    //strcpy (mqtt_server, json["mqtt_server"]);
+                    emonCMSserverAddress = json.get<String> ("emonCMSserver");
+                    emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
+                    mainsVoltage = json.get<int> ("mainsVoltage");
+                    
+                    //strcpy (mqtt_port, json["mqtt_port"]);
+                    //strcpy (blynk_token, json["blynk_token"]);
+                    configLoaded = true;
+                } else {
+                    Serial.println ("Error al leer el archivo de configuración");
+                }
+            } else {
+                Serial.println ("Error al abrir el archivo de configuración");
+            }
+        } else {
+            Serial.println ("El archivo de configuración no existe");
+        }
+
+        SPIFFS.end ();
+    } else {
+        Serial.println ("Error al abrir el sistema de archivos. Formateando");
+        SPIFFS.format ();
+        SPIFFS.end ();
+        ESP.reset ();
+    }
+    //end read
+
+}
+
+void saveConfigData () {
 
 }
 
 void startWifiManager (MyWiFiManager &wifiManager) {
-    //leer datos de la flash
 
     wifiManager.setSaveConfigCallback (configModeCallback);
     wifiManager.init ();
-    //Si hay que guardar
-    if (shouldSaveConfig) {
-        getCustomData (wifiManager);
-
-        //	guardar datos en flash
-        saveData ();
-    }
-
 }
 
 /********************************************//**
@@ -223,7 +272,19 @@ void setup () {
     Serial.begin (115200);
 
 #ifdef WIFI_MANAGER
+    //leer datos de la flash
+    loadConfigData ();
+
     startWifiManager (wifiManager);
+
+    //Si hay que guardar
+    if (shouldSaveConfig) {
+        getCustomData (wifiManager);
+
+        //	guardar datos en flash
+        saveConfigData ();
+    }
+
 #else // WIFI_MANAGER
     //--------------------- Conectar a la red WiFi -------------------------
     WiFi.begin (WIFI_SSID, WIFI_PASS);

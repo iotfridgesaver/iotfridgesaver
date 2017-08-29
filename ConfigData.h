@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _GLOBAL_h
-#define _GLOBAL_h
+#ifndef _CONFIGDATA_h
+#define _CONFIGDATA_h
 
 #define DEBUG_ENABLED
 #define WIFI_MANAGER
@@ -17,6 +17,8 @@ String emonCMSwriteApiKey; ///< API key del usuario
 
 const int fanThreshold = 60;        ///< Valor en vatios por encima del cual se enciende el ventilador
 int mainsVoltage = 230;       ///< Tensión de alimentación
+
+const char *configFileName = "\config.json";
 
 
 #endif

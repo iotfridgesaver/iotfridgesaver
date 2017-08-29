@@ -4,15 +4,33 @@
 
 #include "WifiManagerSetup.h"
 
+extern String emonCMSserverAddress;  ///< Dirección del servidor EmonCMS
+extern String emonCMSwriteApiKey; 
+extern int mainsVoltage;
+
 #define MAX_STRING_LENGTH 40
+extern bool configLoaded;
 
 void MyWiFiManager::init() {
     resetSettings();
-	//customNTPServer = new AsyncWiFiManagerParameter  ("server", "NTP server", "enabled", 40, " type=\"checkbox\"  ");
-	//customNTPLabel = new AsyncWiFiManagerParameter  ("<label for='server'>NTP</label>");
-    _emonCMSserverAddressCParam = new AsyncWiFiManagerParameter ("server", "EmonCMS server", "cloud.iotfridgesaver.com", MAX_STRING_LENGTH);
-    _emonCMSwriteApiKeyCParam = new AsyncWiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
-    _mainsVoltageCParam = new AsyncWiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
+
+    const char * serverName;
+    const char * apiKey;
+    char *  volt;
+        
+    if (configLoaded) {
+        serverName = emonCMSserverAddress.c_str ();
+        apiKey = emonCMSwriteApiKey.c_str ();
+        itoa(mainsVoltage, volt,10);
+    } else {
+        serverName = "cloud.iotfridgesaver.com";
+        apiKey = "";
+        volt = "230";
+    }
+    
+    _emonCMSserverAddressCParam = new AsyncWiFiManagerParameter ("server", "EmonCMS server", serverName, MAX_STRING_LENGTH);
+    _emonCMSwriteApiKeyCParam = new AsyncWiFiManagerParameter ("apikey", "EmonCMS API key", apiKey, MAX_STRING_LENGTH);
+    _mainsVoltageCParam = new AsyncWiFiManagerParameter ("voltage", "Mains voltage", volt, 5);
     setConnectTimeout(15);
     //setCustomHeadElement("<style>input[type='checkbox'] {width: initial;}</style>");
     addParameter(_emonCMSserverAddressCParam);
