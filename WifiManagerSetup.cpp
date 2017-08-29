@@ -15,8 +15,6 @@ extern bool configLoaded;
 void MyWiFiManager::init() {
     //resetSettings();
 
-    Serial.println ("1111");
-    Serial.printf ("Numero: %d", 2222);
 /*#ifdef DEBUG_ENABLED
     Serial.printf ("emonCMSserverAddress1: %s\n", emonCMSserverAddress.c_str ());
     Serial.printf ("emonCMSwriteApiKey1: %s\n", emonCMSwriteApiKey.c_str ());
