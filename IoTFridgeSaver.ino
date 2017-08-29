@@ -4,6 +4,7 @@
 #include <DallasTemperature.h>          // https://github.com/milesburton/Arduino-Temperature-Control-Library
 #include <ArduinoOTA.h>
 #include "OTAhelper.h"
+#include "WifiManagerSetup.h"
 #include "ConfigData.h"
 
 #define EMONLIB
@@ -29,6 +30,8 @@ DallasTemperature sensors (&oneWire);   ///< Pasar el bus de datos como referenc
 const int minTemperature = -100;        ///< Temperatura mínima válida
 
 int fanOn = 0;                          ///< Velocidad del ventilador
+
+bool shouldSaveConfig = false;          ///< Verdadero si WiFi Manager activa una configuración nueva
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -162,19 +165,54 @@ uint8_t initTempSensors () {
     return numberOfDevices;
 }
 
+void configModeCallback () {
+#ifdef DEBUG_ENABLED
+    Serial.printf ("%s: Guardar configuración\n", __FUNCTION__);
+#endif // DEBUG_ENABLED
+    shouldSaveConfig = true;
+}
+
+void startWifiManager (MyWiFiManager &wifiManager) {
+    //leer datos de la flash
+    wifiManager.setSaveConfigCallback (configModeCallback);
+    wifiManager.init ();
+    //Si hay que guardar
+    if (shouldSaveConfig) {
+        //	Obtener datos de WifiManager
+        emonCMSserverAddress = wifiManager.getEmonCMSserverAddress ();
+        emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
+        mainsVoltage = wifiManager.getMainsVoltage ();
+
+#ifdef DEBUG_ENABLED
+        Serial.printf ("Servidor: %s\n", emonCMSserverAddress.c_str ());
+        Serial.printf ("API Key: %s\n", emonCMSwriteApiKey.c_str ());
+        Serial.printf ("Tensión: %d\n", mainsVoltage);
+#endif // DEBUG_ENABLED
+
+        if (mainsVoltage == 0) {
+#ifdef DEBUG_ENABLED
+            Serial.println ("ERROR. Tensión debe ser un número");
+#endif // DEBUG_ENABLED
+            wifiManager.resetSettings ();
+            delay (1000);
+            ESP.reset ();
+        }
+
+        //	guardar datos en flash
+    }
+
+}
+
 /********************************************//**
 *  Setup
 ***********************************************/
 void setup () {
+    MyWiFiManager wifiManager;              ///< WiFi Manager. Configura los datos WiFi y otras configuraciones
+
     Serial.begin (115200);
 
 #ifdef WIFI_MANAGER
-    //leer datos de la flash
-    //Iniciar wifi manager
-
-    //Si hay que guardar
-    //	Obtener datos de WifiManager
-    //	guardar datos en flash
+    startWifiManager (wifiManager);
 #else // WIFI_MANAGER
     //--------------------- Conectar a la red WiFi -------------------------
     WiFi.begin (WIFI_SSID, WIFI_PASS);
@@ -187,7 +225,7 @@ void setup () {
     }
     //----------------------------------------------------------------------
 #endif // WIFI_MANAGER
-    Serial.printf ("Conectado!!! IP: %s", WiFi.localIP().toString().c_str());
+    Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP().toString().c_str());
 
     MDNS.begin ("FridgeSaverMonitor"); //Iniciar servidor MDNS para llamar al dispositivo como FridgeSaverMonitor.local
 
@@ -259,9 +297,9 @@ int8_t sendDataEmonCMS (float tempRadiator,
     char* tempStr; ///< Cadena temporal para almacenar los numeros como texto
 
     // Conecta al servidor
-    if (!client.connect (emonCMSserverAddress, 443)) {
+    if (!client.connect (emonCMSserverAddress.c_str(), 443)) {
 #ifdef DEBUG_ENABLED
-        Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress);
+        Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress.c_str());
 #endif
         return -1; // Error de conexión
     }
