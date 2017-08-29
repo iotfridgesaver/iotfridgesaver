@@ -172,33 +172,44 @@ void configModeCallback () {
     shouldSaveConfig = true;
 }
 
+void getCustomData (MyWiFiManager &wifiManager) {
+    //	Obtener datos de WifiManager
+    emonCMSserverAddress = wifiManager.getEmonCMSserverAddress ();
+    emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
+    mainsVoltage = wifiManager.getMainsVoltage ();
+
+#ifdef DEBUG_ENABLED
+    Serial.printf ("Servidor: %s\n", emonCMSserverAddress.c_str ());
+    Serial.printf ("API Key: %s\n", emonCMSwriteApiKey.c_str ());
+    Serial.printf ("Tensión: %d\n", mainsVoltage);
+#endif // DEBUG_ENABLED
+
+    if (mainsVoltage == 0) {
+#ifdef DEBUG_ENABLED
+        Serial.println ("ERROR. Tensión debe ser un número");
+#endif // DEBUG_ENABLED
+        wifiManager.resetSettings ();
+        delay (1000);
+        ESP.reset ();
+    }
+
+}
+
+void saveData () {
+
+}
+
 void startWifiManager (MyWiFiManager &wifiManager) {
     //leer datos de la flash
+
     wifiManager.setSaveConfigCallback (configModeCallback);
     wifiManager.init ();
     //Si hay que guardar
     if (shouldSaveConfig) {
-        //	Obtener datos de WifiManager
-        emonCMSserverAddress = wifiManager.getEmonCMSserverAddress ();
-        emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
-        mainsVoltage = wifiManager.getMainsVoltage ();
-
-#ifdef DEBUG_ENABLED
-        Serial.printf ("Servidor: %s\n", emonCMSserverAddress.c_str ());
-        Serial.printf ("API Key: %s\n", emonCMSwriteApiKey.c_str ());
-        Serial.printf ("Tensión: %d\n", mainsVoltage);
-#endif // DEBUG_ENABLED
-
-        if (mainsVoltage == 0) {
-#ifdef DEBUG_ENABLED
-            Serial.println ("ERROR. Tensión debe ser un número");
-#endif // DEBUG_ENABLED
-            wifiManager.resetSettings ();
-            delay (1000);
-            ESP.reset ();
-        }
+        getCustomData (wifiManager);
 
         //	guardar datos en flash
+        saveData ();
     }
 
 }
