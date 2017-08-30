@@ -312,6 +312,11 @@ void setup () {
     configFileName = "\config.json";
     loadConfigData ();
 
+    // Si no se han configurado los datos del servidor borrar la configuración
+    if (emonCMSserverAddress == "" || emonCMSwriteApiKey == "") {
+        wifiManager.resetSettings ();
+    }
+
     startWifiManager (wifiManager);
 
     //Si hay que guardar
