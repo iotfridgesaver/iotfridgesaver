@@ -45,12 +45,12 @@ const char *configFileName = "/config.json";
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
 ***********************************************/
-int MaxValue (float temperatures[]) {
+int MaxValue (float *temperatures, uint8_t size) {
 
     float max_v = minTemperature;
     int max_i = 0;
 
-    for (int i = 0; i < sizeof (temperatures) / sizeof (temperatures[0]); i++) {
+    for (int i = 0; i < size; i++) {
         if (temperatures[i] > max_v) {
             max_v = temperatures[i];
             max_i = i;
@@ -78,19 +78,19 @@ void sortSensors () {
         temperatures[i] = sensors.getTempCByIndex (i);
     }
 
-    max_i = MaxValue (temperatures);
+    max_i = MaxValue (temperatures, NUMBER_OF_SENSORS);
     tempRadiator_idx = max_i;
     temperatures[max_i] = minTemperature;
 
-    max_i = MaxValue (temperatures);
+    max_i = MaxValue (temperatures, NUMBER_OF_SENSORS);
     tempAmbient_idx = max_i;
     temperatures[max_i] = minTemperature;
 
-    max_i = MaxValue (temperatures);
+    max_i = MaxValue (temperatures, NUMBER_OF_SENSORS);
     tempFridge_idx = max_i;
     temperatures[max_i] = minTemperature;
 
-    max_i = MaxValue (temperatures);
+    max_i = MaxValue (temperatures, NUMBER_OF_SENSORS);
     tempFreezer_idx = max_i;
     //  temperatures[max_i]= minTemperature;
 
@@ -236,11 +236,11 @@ void loadConfigData () {
                     mainsVoltage = json.get<int> ("mainsVoltage");
 
 #ifdef DEBUG_ENABLED
-                    Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str());
+                    Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
                     Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
                     Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
-                    
+
                     //strcpy (mqtt_port, json["mqtt_port"]);
                     //strcpy (blynk_token, json["blynk_token"]);
                     configLoaded = true;
@@ -334,7 +334,7 @@ void setup () {
     }
     //----------------------------------------------------------------------
 #endif // WIFI_MANAGER
-    Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP().toString().c_str());
+    Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
 #ifdef DEBUG_ENABLED
     Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
@@ -409,9 +409,9 @@ int8_t sendDataEmonCMS (float tempRadiator,
     char* tempStr; ///< Cadena temporal para almacenar los numeros como texto
 
     // Conecta al servidor
-    if (!client.connect (emonCMSserverAddress.c_str(), 443)) {
+    if (!client.connect (emonCMSserverAddress.c_str (), 443)) {
 #ifdef DEBUG_ENABLED
-        Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress.c_str());
+        Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress.c_str ());
 #endif
         return -1; // Error de conexión
     }
