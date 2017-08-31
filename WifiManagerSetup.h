@@ -21,6 +21,7 @@ protected:
     //AsyncWiFiManagerParameter * customNTPServer;
     //AsyncWiFiManagerParameter * customNTPLabel;
     AsyncWiFiManagerParameter * _emonCMSserverAddressCParam;
+    AsyncWiFiManagerParameter * _emonCMSserverPathCParam;
     AsyncWiFiManagerParameter * _emonCMSwriteApiKeyCParam;
     AsyncWiFiManagerParameter * _mainsVoltageCParam;
     /*String emonCMSserverAddress;
@@ -30,6 +31,7 @@ public:
 	MyWiFiManager();
 	void init();
     String getEmonCMSserverAddress ();
+    String getEmonCMSserverPath ();
     String getEmonCMSwriteApiKey ();
     int getMainsVoltage ();
 };

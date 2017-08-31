@@ -9,6 +9,8 @@
 #include "OTAhelper.h"
 #include "WifiManagerSetup.h"
 
+#define TEST
+
 #define EMONLIB
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
@@ -37,6 +39,7 @@ bool shouldSaveConfig = false;          ///< Verdadero si WiFi Manager activa un
 bool configLoaded = false;
 
 String emonCMSserverAddress = "";  ///< Dirección del servidor EmonCMS
+String emonCMSserverPath = "";
 String emonCMSwriteApiKey = ""; ///< API key del usuario
 int mainsVoltage = 230;       ///< Tensión de alimentación
 const char *configFileName = "/config.json";
@@ -69,15 +72,23 @@ int MaxValue (float *temperatures, uint8_t size) {
 ***********************************************/
 void sortSensors () {
     //sensors.setWaitForConversion (false);  // makes it async
+    int max_i = 0;
+
+#ifndef TEST
     sensors.requestTemperatures ();
 
+
     //  script to automatically allocate the postion of each sensor based on their temperature
-    int max_i = 0;
 
     for (int i = 0; i < NUMBER_OF_SENSORS; i++) {
         temperatures[i] = sensors.getTempCByIndex (i);
     }
-
+#else
+    temperatures[0] = 30;
+    temperatures[1] = 35;
+    temperatures[2] = 6;
+    temperatures[3] = -18;
+#endif
     max_i = MaxValue (temperatures, NUMBER_OF_SENSORS);
     tempRadiator_idx = max_i;
     temperatures[max_i] = minTemperature;
@@ -232,11 +243,13 @@ void loadConfigData () {
 
                     //strcpy (mqtt_server, json["mqtt_server"]);
                     emonCMSserverAddress = json.get<String> ("emonCMSserver");
+                    emonCMSserverPath = json.get<String> ("emonCMSpath");
                     emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
                     mainsVoltage = json.get<int> ("mainsVoltage");
 
 #ifdef DEBUG_ENABLED
                     Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
+                    Serial.printf ("emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
                     Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
                     Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
@@ -271,6 +284,7 @@ void saveConfigData () {
         DynamicJsonBuffer jsonBuffer;
         JsonObject& json = jsonBuffer.createObject ();
         json["emonCMSserver"] = emonCMSserverAddress;
+        json["emonCMSpath"] = emonCMSserverPath;
         json["emonCMSapiKey"] = emonCMSwriteApiKey;
         json["mainsVoltage"] = mainsVoltage;
 
@@ -313,7 +327,7 @@ void setup () {
     loadConfigData ();
 
     // Si no se han configurado los datos del servidor borrar la configuración
-    if (emonCMSserverAddress == "" || emonCMSwriteApiKey == "") {
+    if (emonCMSserverAddress == "" || emonCMSserverPath == "" || emonCMSwriteApiKey == "") {
         wifiManager.resetSettings ();
     }
 
@@ -343,6 +357,7 @@ void setup () {
 
 #ifdef DEBUG_ENABLED
     Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
+    Serial.printf ("emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
     Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
     Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
@@ -355,7 +370,7 @@ void setup () {
 
     //Iniciar NTP
 
-
+#ifndef TEST
    // Iniciar el sensor de corriente
 #ifdef EMONLIB
     emon1.current (A0, 3.05);             // Current: input pin, calibration.
@@ -370,6 +385,7 @@ void setup () {
         }
     }
 
+#endif
     sortSensors (); // Asignar los sensores automáticamente
 }
 
@@ -416,13 +432,13 @@ int8_t sendDataEmonCMS (float tempRadiator,
     // Conecta al servidor
     if (!client.connect (emonCMSserverAddress.c_str (), 443)) {
 #ifdef DEBUG_ENABLED
-        Serial.printf ("Error al conectar al servidor EmonCMS en %s", emonCMSserverAddress.c_str ());
+        Serial.printf ("Error al conectar al servidor EmonCMS en %s\n", emonCMSserverAddress.c_str ());
 #endif
         return -1; // Error de conexión
     }
 
     // Compone la peticion HTTP
-    String httpRequest = "GET /input/post.json?node=IoTFridgeSaver&fulljson={";
+    String httpRequest = "GET "+ emonCMSserverPath +"/input/post.json?node=IoTFridgeSaver&fulljson={";
     dtostrf (tempRadiator, 3, 3, tempStr);
     httpRequest += "\"tempRadiator\":" + String (tempStr) + ",";
     dtostrf (tempAmbient, 3, 3, tempStr);
@@ -434,8 +450,8 @@ int8_t sendDataEmonCMS (float tempRadiator,
     dtostrf (watts, 3, 3, tempStr);
     httpRequest += "\"watts\":" + String (tempStr) + ",";
     httpRequest += "\"watts\":" + fanOn;
-    httpRequest += ",}&apikey=" + String (emonCMSwriteApiKey) + " HTTP/1.1\r\n";
-    httpRequest += "Host: " + String (emonCMSserverAddress) + "\r\n\r\n";
+    httpRequest += ",}&apikey=" + emonCMSwriteApiKey + " HTTP/1.1\r\n";
+    httpRequest += "Host: " + emonCMSserverAddress + "\r\n\r\n";
 
 #ifdef DEBUG_ENABLED
     Serial.printf ("%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
@@ -484,7 +500,7 @@ void loop () {
 
     if (millis () - lastRun > MEASURE_PERIOD) {
         lastRun = millis ();
-
+#ifndef TEST
         sensors.requestTemperatures ();
         temperatures[tempRadiator_idx] = sensors.getTempCByIndex (tempRadiator_idx);
         temperatures[tempAmbient_idx] = sensors.getTempCByIndex (tempAmbient_idx);
@@ -492,6 +508,21 @@ void loop () {
         temperatures[tempFreezer_idx] = sensors.getTempCByIndex (tempFreezer_idx);
 
         watts = getPower ();
+#else
+        temperatures[tempRadiator_idx] = random (35, 40);
+        temperatures[tempAmbient_idx] = random (25, 30);
+        temperatures[tempFridge_idx] = random (0, 10);
+        temperatures[tempFreezer_idx] = random (-20, -15);
+        watts = random (0,100);
+#endif
+
+#ifdef DEBUG_ENABLED
+        Serial.printf ("Temperatura radiador: %f\n", temperatures[tempRadiator_idx]);
+        Serial.printf ("Temperatura ambiente: %f\n", temperatures[tempAmbient_idx]);
+        Serial.printf ("Temperatura frigorifico: %f\n", temperatures[tempFridge_idx]);
+        Serial.printf ("Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
+        Serial.printf ("Consumo: %f\n", watts);
+#endif // DEBUG_ENABLED
 
         sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanOn);
 
