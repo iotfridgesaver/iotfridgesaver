@@ -8,6 +8,7 @@
 #include "FS.h"
 #include "OTAhelper.h"
 #include "WifiManagerSetup.h"
+#include <WiFiManager.h>
 
 #define TEST
 
