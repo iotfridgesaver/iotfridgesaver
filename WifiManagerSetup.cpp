@@ -37,11 +37,11 @@ void MyWiFiManager::init() {
         volt = "230";
     }*/
     
-    _emonCMSserverAddressCParam = new AsyncWiFiManagerParameter ("server", "EmonCMS server", "clour.iotfridgesaver.com", MAX_STRING_LENGTH);
+    _emonCMSserverAddressCParam = new AsyncWiFiManagerParameter ("server", "EmonCMS server", "emoncms.iotfridgesaver.com", MAX_STRING_LENGTH);
     _emonCMSserverPathCParam = new AsyncWiFiManagerParameter ("path", "EmonCMS server path", "/", MAX_STRING_LENGTH);
     _emonCMSwriteApiKeyCParam = new AsyncWiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
     _mainsVoltageCParam = new AsyncWiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
-    setConnectTimeout(15);
+    setConnectTimeout(30);
     //setCustomHeadElement("<style>input[type='checkbox'] {width: initial;}</style>");
     addParameter(_emonCMSserverAddressCParam);
     addParameter (_emonCMSserverPathCParam);

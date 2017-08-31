@@ -42,7 +42,7 @@ String emonCMSserverAddress = "";  ///< Dirección del servidor EmonCMS
 String emonCMSserverPath = "";
 String emonCMSwriteApiKey = ""; ///< API key del usuario
 int mainsVoltage = 230;       ///< Tensión de alimentación
-const char *configFileName = "/config.json";
+const char *configFileName = "config.json";
 
 
 /********************************************//**
@@ -195,11 +195,13 @@ void configModeCallback () {
 void getCustomData (MyWiFiManager &wifiManager) {
     //	Obtener datos de WifiManager
     emonCMSserverAddress = wifiManager.getEmonCMSserverAddress ();
+    emonCMSserverPath = wifiManager.getEmonCMSserverPath ();
     emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
     mainsVoltage = wifiManager.getMainsVoltage ();
 
 #ifdef DEBUG_ENABLED
     Serial.printf ("Servidor: %s\n", emonCMSserverAddress.c_str ());
+    Serial.printf ("Ruta: %s\n", emonCMSserverPath.c_str ());
     Serial.printf ("API Key: %s\n", emonCMSwriteApiKey.c_str ());
     Serial.printf ("Tensión: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
@@ -427,7 +429,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     WiFiClientSecure client; ///< Cliente TCP con SSL
     const unsigned int maxTimeout = 5000; ///< Tiempo maximo de espera a la respuesta del servidor
     unsigned long timeout; ///< Contador para acumilar el tiempo de espera
-    char* tempStr; ///< Cadena temporal para almacenar los numeros como texto
+    char tempStr[10]; ///< Cadena temporal para almacenar los numeros como texto
 
     // Conecta al servidor
     if (!client.connect (emonCMSserverAddress.c_str (), 443)) {
@@ -449,8 +451,8 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "\"tempFreezer\":" + String (tempStr) + ",";
     dtostrf (watts, 3, 3, tempStr);
     httpRequest += "\"watts\":" + String (tempStr) + ",";
-    httpRequest += "\"watts\":" + fanOn;
-    httpRequest += ",}&apikey=" + emonCMSwriteApiKey + " HTTP/1.1\r\n";
+    httpRequest += "\"fan\":" + String(fanOn);
+    httpRequest += "}&apikey=" + emonCMSwriteApiKey + " HTTP/1.1\r\n";
     httpRequest += "Host: " + emonCMSserverAddress + "\r\n\r\n";
 
 #ifdef DEBUG_ENABLED
@@ -465,7 +467,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     while (!client.available ()) {
         if (millis () - timeout > maxTimeout) {
 #ifdef DEBUG_ENABLED
-            Serial.printf ("%s: Firebase client Timeout !", __FUNCTION__);
+            Serial.printf ("%s: EmonCMS client Timeout !", __FUNCTION__);
 #endif
             client.stop ();
             return -2; // Timeout
