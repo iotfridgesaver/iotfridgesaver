@@ -6,8 +6,8 @@
 #define WIFI_MANAGER
 
 #ifndef WIFI_MANAGER
-const char* WIFI_SSID = "NOMBRE_DE_MI_RED";
-const char* WIFI_PASS = "CONTRASEÑA";
+const char* WIFI_SSID = "Iot";
+const char* WIFI_PASS = "1234567890";
 #endif // WIFI_MANAGER
 
 

@@ -9,7 +9,7 @@
 #include "OTAhelper.h"
 #include "WifiManagerSetup.h"
 
-#define TEST
+//#define TEST
 
 #define EMONLIB
 #ifdef EMONLIB
