@@ -9,12 +9,7 @@
 	#include "WProgram.h"
 #endif
 
-#include <WiFiManager.h>    // https://github.com/alanswx/ESPAsyncWiFiManager
-//#include <ESPAsyncWebServer.h>
-//#include <DNSServer.h>
-
-//void configModeCallback(AsyncWiFiManager *myWiFiManager);
-//void saveConfigCallback();
+#include <WiFiManager.h>    // https://github.com/tzapu/WiFiManager
 
 class MyWiFiManager : public WiFiManager {
 protected:

@@ -5,7 +5,7 @@
 #include "WifiManagerSetup.h"
 extern const char *configFileName;
 
-//extern String emonCMSserverAddress;  ///< Dirección del servidor EmonCMS
+//extern String emonCMSserverAddress;  ///< DirecciÃ³n del servidor EmonCMS
 //extern String emonCMSwriteApiKey; 
 //extern int mainsVoltage;
 
