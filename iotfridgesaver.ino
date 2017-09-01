@@ -10,7 +10,7 @@
 #include "WifiManagerSetup.h"
 #include <WiFiManager.h>
 
-#define TEST
+//#define TEST
 
 #define EMONLIB
 #ifdef EMONLIB
