@@ -9,21 +9,21 @@
 	#include "WProgram.h"
 #endif
 
-#include <ESPAsyncWiFiManager.h>    // https://github.com/alanswx/ESPAsyncWiFiManager
-#include <ESPAsyncWebServer.h>
-#include <DNSServer.h>
+#include <WiFiManager.h>    // https://github.com/alanswx/ESPAsyncWiFiManager
+//#include <ESPAsyncWebServer.h>
+//#include <DNSServer.h>
 
 //void configModeCallback(AsyncWiFiManager *myWiFiManager);
 //void saveConfigCallback();
 
-class MyWiFiManager : public AsyncWiFiManager {
+class MyWiFiManager : public WiFiManager {
 protected:
     //AsyncWiFiManagerParameter * customNTPServer;
     //AsyncWiFiManagerParameter * customNTPLabel;
-    AsyncWiFiManagerParameter * _emonCMSserverAddressCParam;
-    AsyncWiFiManagerParameter * _emonCMSserverPathCParam;
-    AsyncWiFiManagerParameter * _emonCMSwriteApiKeyCParam;
-    AsyncWiFiManagerParameter * _mainsVoltageCParam;
+    WiFiManagerParameter * _emonCMSserverAddressCParam;
+    WiFiManagerParameter * _emonCMSserverPathCParam;
+    WiFiManagerParameter * _emonCMSwriteApiKeyCParam;
+    WiFiManagerParameter * _mainsVoltageCParam;
     /*String emonCMSserverAddress;
     String emonCMSwriteApiKey;
     int mainsVoltage;*/
