@@ -1,0 +1,124 @@
+{	"name": "IoTFridgeSaver",
+    "description": "Monitor de consumo y temperatura para frigoríficos",
+    "inputs": [
+        {
+            "name": "tempRadiator",
+            "description": "Temperatura del radiador externo",
+            "processList": [
+            {
+                "process": "log_to_feed",
+                "arguments": {"type": "ProcessArg::FEEDID", "value": "tempRadiator" }
+            }
+            ]
+        },
+		{
+            "name": "tempAmbient",
+            "description": "Temperatura ambiente junto al frigorífico",
+            "processList": [
+            {
+                "process": "log_to_feed",
+                "arguments": {"type": "ProcessArg::FEEDID", "value": "tempAmbient" }
+            }
+            ]
+        },
+		{
+            "name": "tempFridge",
+            "description": "Temperatura en el frigorífico",
+            "processList": [
+            {
+                "process": "log_to_feed",
+                "arguments": {"type": "ProcessArg::FEEDID", "value": "tempFridge" }
+            }
+            ]
+        },
+		{
+            "name": "tempFreezer",
+            "description": "Temperatura en el congelador",
+            "processList": [
+            {
+                "process": "log_to_feed",
+                "arguments": {"type": "ProcessArg::FEEDID", "value": "tempFreezer" }
+            }
+            ]
+        },
+		{
+            "name": "watts",
+            "description": "Consumo del conjunto",
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "watts" }
+                },
+                {
+                    "process": "power_to_kwh",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "watts_kWh" }
+                },
+				{
+                    "process": "power_to_kwhd",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "watts_kWh_d" }
+                }
+            ]
+        },
+		{
+            "name": "fan",
+            "description": "Actividad del ventilador",
+            "processList": [
+            {
+                "process": "log_to_feed",
+                "arguments": {"type": "ProcessArg::FEEDID", "value": "fan" }
+            }
+            ]
+        }
+    ],
+
+    "feeds": [
+        {
+            "name": "tempRadiator",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "tempAmbient",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "tempFridge",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "tempFreezer",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "watts",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "watts_kWh",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "watts_kWh_d",
+            "type": "DataType::DAILY",
+            "engine": "Engine::PHPTIMESERIES",
+            "interval": "60"
+        },
+        {
+            "name": "fan",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        }
+    ]
+}
