@@ -34,7 +34,8 @@ OneWire oneWire (ONE_WIRE_BUS);         ///< Instancia OneWire para comunicar co
 DallasTemperature sensors (&oneWire);   ///< Pasar el bus de datos como referencia
 const int minTemperature = -100;        ///< Temperatura mínima válida
 
-int fanOn = 0;                          ///< Velocidad del ventilador
+bool fanEnabled = true;                 ///< Verdadero si el ventilador está activado
+int fanSpeed = 0;                       ///< Velocidad del ventilador
 
 bool shouldSaveConfig = false;          ///< Verdadero si WiFi Manager activa una configuración nueva
 bool configLoaded = false;
@@ -321,8 +322,8 @@ void setup () {
 
     Serial.begin (115200);
     // Control del ventilador
-    pinMode (D3, INPUT_PULLUP); // D3 = GPIO0. Botón para controlar la activación del ventilador
-    analogWrite (D1, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
+    pinMode (FAN_ENABLE_BUTTON, INPUT_PULLUP); // D3 = GPIO0. Botón para controlar la activación del ventilador
+    analogWrite (FAN_PWM_PIN, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
 
 #ifdef WIFI_MANAGER
     //leer datos de la flash
@@ -403,15 +404,16 @@ double getPower () {
 #endif
 
 #ifdef EMONLIB
-    if (digitalRead (D3) && watts > fanThreshold) { // Si el consumo > 60W
+    fanEnabled = digitalRead (FAN_ENABLE_BUTTON);
+    if (fanEnabled && watts > fanThreshold) { // Si el consumo > 60W
 #else
-    if (digitalRead (D3)) {
+    if (fanEnabled) {
 #endif
-        analogWrite (D1, 850); // Encender ventilador
-        fanOn = 850;
+        analogWrite (FAN_PWM_PIN, 850); // Encender ventilador
+        fanSpeed = 850;
     } else {
-        analogWrite (D1, 0);
-        fanOn = 0;
+        analogWrite (FAN_PWM_PIN, 0);
+        fanSpeed = 0;
     }
 
     return watts;
@@ -527,7 +529,7 @@ void loop () {
         Serial.printf ("Consumo: %f\n", watts);
 #endif // DEBUG_ENABLED
 
-        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanOn);
+        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
 
     }
 
