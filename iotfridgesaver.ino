@@ -9,6 +9,7 @@
 #include "OTAhelper.h"
 #include "WifiManagerSetup.h"
 #include <WiFiManager.h>
+#include <OneButton.h>
 
 //#define TEST
 
@@ -34,6 +35,7 @@ OneWire oneWire (ONE_WIRE_BUS);         ///< Instancia OneWire para comunicar co
 DallasTemperature sensors (&oneWire);   ///< Pasar el bus de datos como referencia
 const int minTemperature = -100;        ///< Temperatura mínima válida
 
+OneButton button (FAN_ENABLE_BUTTON, false);
 bool fanEnabled = true;                 ///< Verdadero si el ventilador está activado
 int fanSpeed = 0;                       ///< Velocidad del ventilador
 
@@ -314,6 +316,10 @@ void startWifiManager (MyWiFiManager &wifiManager) {
     wifiManager.init ();
 }
 
+void button_click () {
+    fanEnabled = !fanEnabled;
+}
+
 /********************************************//**
 *  Setup
 ***********************************************/
@@ -322,8 +328,8 @@ void setup () {
 
     Serial.begin (115200);
     // Control del ventilador
-    pinMode (FAN_ENABLE_BUTTON, INPUT_PULLUP); // D3 = GPIO0. Botón para controlar la activación del ventilador
     analogWrite (FAN_PWM_PIN, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
+    button.attachClick (button_click);
 
 #ifdef WIFI_MANAGER
     //leer datos de la flash
@@ -404,7 +410,7 @@ double getPower () {
 #endif
 
 #ifdef EMONLIB
-    fanEnabled = digitalRead (FAN_ENABLE_BUTTON);
+    //fanEnabled = digitalRead (FAN_ENABLE_BUTTON);
     if (fanEnabled && watts > fanThreshold) { // Si el consumo > 60W
 #else
     if (fanEnabled) {
