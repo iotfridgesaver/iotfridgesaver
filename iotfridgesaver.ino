@@ -226,16 +226,24 @@ void loadConfigData () {
     //SPIFFS.format();
 
     //read configuration from FS json
+#ifdef DEBUG_ENABLED
     Serial.println ("Montando sistema de archivos...");
+#endif // DEBUG_ENABLED
 
     if (SPIFFS.begin ()) {
+#ifdef DEBUG_ENABLED
         Serial.printf ("Sistema de archivos montado. Abriendo %s\n", configFileName);
+#endif // DEBUG_ENABLED
         if (SPIFFS.exists (configFileName)) {
             //file exists, reading and loading
+#ifdef DEBUG_ENABLED
             Serial.printf ("Leyendo el archivo de configuración: %s\n", configFileName);
+#endif // DEBUG_ENABLED
             File configFile = SPIFFS.open (configFileName, "r");
             if (configFile) {
+#ifdef DEBUG_ENABLED
                 Serial.println ("Archivo de configuración abierto");
+#endif // DEBUG_ENABLED
                 size_t size = configFile.size ();
                 // Allocate a buffer to store contents of the file.
                 std::unique_ptr<char[]> buf (new char[size]);
@@ -243,9 +251,13 @@ void loadConfigData () {
                 configFile.readBytes (buf.get (), size);
                 DynamicJsonBuffer jsonBuffer;
                 JsonObject& json = jsonBuffer.parseObject (buf.get ());
+#ifdef DEBUG_ENABLED
                 json.printTo (Serial);
+#endif // DEBUG_ENABLED
                 if (json.success ()) {
+#ifdef DEBUG_ENABLED
                     Serial.println ("\nparsed json");
+#endif // DEBUG_ENABLED
 
                     //strcpy (mqtt_server, json["mqtt_server"]);
                     emonCMSserverAddress = json.get<String> ("emonCMSserver");
@@ -263,19 +275,30 @@ void loadConfigData () {
                     //strcpy (mqtt_port, json["mqtt_port"]);
                     //strcpy (blynk_token, json["blynk_token"]);
                     configLoaded = true;
-                } else {
+                } 
+#ifdef DEBUG_ENABLED
+                else {
                     Serial.println ("Error al leer el archivo de configuración");
                 }
-            } else {
+#endif // DEBUG_ENABLED
+            } 
+#ifdef DEBUG_ENABLED
+            else {
                 Serial.println ("Error al abrir el archivo de configuración");
             }
-        } else {
+#endif // DEBUG_ENABLED
+        } 
+#ifdef DEBUG_ENABLED
+        else {
             Serial.println ("El archivo de configuración no existe");
         }
+#endif // DEBUG_ENABLED
 
         SPIFFS.end ();
     } else {
+#ifdef DEBUG_ENABLED
         Serial.println ("Error al abrir el sistema de archivos. Formateando");
+#endif // DEBUG_ENABLED
         SPIFFS.format ();
         SPIFFS.end ();
         ESP.reset ();
@@ -285,7 +308,9 @@ void loadConfigData () {
 }
 
 void saveConfigData () {
+#ifdef DEBUG_ENABLED
     Serial.println ("saving config");
+#endif // DEBUG_ENABLED
     if (SPIFFS.begin ()) {
         DynamicJsonBuffer jsonBuffer;
         JsonObject& json = jsonBuffer.createObject ();
@@ -296,16 +321,24 @@ void saveConfigData () {
 
         File configFile = SPIFFS.open (configFileName, "w");
         if (!configFile) {
+#ifdef DEBUG_ENABLED
             Serial.println ("Error al abrir el archivo de configuración");
+#endif // DEBUG_ENABLED
+            return;
         }
 
+#ifdef DEBUG_ENABLED
         json.prettyPrintTo (Serial);
         Serial.println ();
+#endif // DEBUG_ENABLED
         json.printTo (configFile);
         configFile.close ();
-    } else {
+    } 
+#ifdef DEBUG_ENABLED
+    else {
         Serial.printf ("Error al montar el sistema de archivos");
     }
+#endif // DEBUG_ENABLED
     SPIFFS.end ();
     //end save
 }
@@ -390,7 +423,9 @@ void setup () {
     while (numberOfDevices != NUMBER_OF_SENSORS) {
         numberOfDevices = initTempSensors ();
         if (numberOfDevices != NUMBER_OF_SENSORS) {
+#ifdef DEBUG_ENABLED
             Serial.printf ("Error en el numero de sensores: %d\n", numberOfDevices);
+#endif // DEBUG_ENABLED
             delay (1000);
         }
     }
