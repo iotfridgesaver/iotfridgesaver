@@ -56,6 +56,8 @@ const char *configFileName = "config.json";
 TimeAlarmsClass alarmDaily;
 AverageCalculator ambientAverage;
 bool sendAverage = false;
+bool timeChanged = false;
+AlarmID_t alarmID;
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -358,17 +360,35 @@ void startWifiManager (MyWiFiManager &wifiManager) {
 }
 
 void button_click () {
+    Serial.println ("Click");
     fanEnabled = !fanEnabled;
 }
 
 void long_click () {
+    Serial.println ("Long click");
     WiFi.disconnect ();
+    WiFi.begin ("123", "123");
+    delay (1000);
     ESP.restart ();
 }
 
 void getDailyAmbientAverage () {
-    aveTemperatures[tempAmbient_idx] = ambientAverage.reset ();
-    sendAverage = true;
+        aveTemperatures[tempAmbient_idx] = ambientAverage.reset ();
+        sendAverage = true;
+}
+
+void processSyncEvent (NTPSyncEvent_t ntpEvent) {
+    if (ntpEvent) {
+        Serial.print ("Time Sync error: ");
+        if (ntpEvent == noResponse)
+            Serial.println ("NTP server not reachable");
+        else if (ntpEvent == invalidAddress)
+            Serial.println ("Invalid NTP server address");
+    } else {
+        Serial.print ("Got NTP time: ");
+        Serial.println (NTP.getTimeDateString (NTP.getLastNTPSync ()));
+        timeChanged = true;
+    }
 }
 
 /********************************************//**
@@ -380,6 +400,7 @@ void setup () {
     Serial.begin (115200);
     // Control del ventilador
     analogWrite (FAN_PWM_PIN, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
+    pinMode (FAN_ENABLE_BUTTON, INPUT);
     button.attachClick (button_click);
     button.setPressTicks (t_longPress);
     button.attachPress (long_click);
@@ -455,7 +476,13 @@ void setup () {
 #endif
     sortSensors (); // Asignar los sensores automáticamente
 
-    alarmDaily.alarmRepeat (0, 0, 0, getDailyAmbientAverage);
+#ifndef TEST
+    Alarm.alarmRepeat (0, 0, 1, getDailyAmbientAverage);
+#else
+    Alarm.alarmRepeat (10, 21, 1, getDailyAmbientAverage);
+#endif
+
+    NTP.onNTPSyncEvent (processSyncEvent);
 }
 
 /********************************************//**
@@ -516,7 +543,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "\"tempAmbient\":" + String (tempStr) + ",";
     if (aveTempAmbient > -100) {
         dtostrf (tempAmbient, 3, 3, tempStr);
-        httpRequest += "\"aveTempAmbient\":" + String (tempStr) + ",";
+        httpRequest += "\"tempAmbient_ave\":" + String (tempStr) + ",";
     }
     dtostrf (tempFridge, 3, 3, tempStr);
     httpRequest += "\"tempFridge\":" + String (tempStr) + ",";
@@ -572,9 +599,22 @@ void loop () {
     double watts;
 
     ArduinoOTA.handle ();
+    Alarm.delay (0);
+    button.tick ();
+
+    if (timeChanged) {
+#ifndef TEST
+        alarmID = Alarm.alarmRepeat (0, 0, 1, getDailyAmbientAverage);
+#else
+        alarmID = Alarm.alarmRepeat (16, 46, 0, getDailyAmbientAverage);
+#endif
+        timeChanged = false;
+    }
 
     if (millis () - lastRun > MEASURE_PERIOD) {
         lastRun = millis ();
+
+
 #ifndef TEST
         sensors.requestTemperatures ();
         temperatures[tempRadiator_idx] = sensors.getTempCByIndex (tempRadiator_idx);
@@ -585,10 +625,11 @@ void loop () {
 
         watts = getPower ();
 #else
-        temperatures[tempRadiator_idx] = random (35, 40);
-        temperatures[tempAmbient_idx] = random (25, 30);
-        temperatures[tempFridge_idx] = random (0, 10);
-        temperatures[tempFreezer_idx] = random (-20, -15);
+        temperatures[tempRadiator_idx] = random (3500, 4000)/(float)100;
+        temperatures[tempAmbient_idx] = random (2500, 3000) / (float)100;
+        ambientAverage.feed (temperatures[tempAmbient_idx]);
+        temperatures[tempFridge_idx] = random (0, 1000) / (float)100;
+        temperatures[tempFreezer_idx] = random (-2000, -1500) / (float)100;
         watts = random (0,100);
 #endif
 
@@ -608,6 +649,8 @@ void loop () {
         }
 
     }
+
+
 
 
 }

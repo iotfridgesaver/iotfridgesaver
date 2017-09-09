@@ -1,0 +1,56 @@
+
+Inicialización
+
+	Iniciar Serie
+	
+	//Intentar leer datos de la flash
+
+	//Iniciar wifi manager
+
+	//Si hay que guardar
+	//	Obtener datos de WifiManager
+	//	guardar datos en flash
+
+	Iniciar MDNS
+
+	Iniciar OTA
+
+	-- Iniciar Remote Debug; Opt
+
+	Iniciar NTP
+	
+	Iniciar control ventilador
+	
+	Iniciar medidor consumo
+	
+	Iniciar termómetros
+		Mientras no ok
+			Contar termómetros
+			Si el número es correcto (4)
+				Obtener temperaturas
+				Ordenar indices de sensores
+				Ok
+			si no
+				generar error
+				parar 2 segundos
+				no ok
+				
+---------------------------------
+
+Por siempre
+
+	Manejador OTA
+	Manejador RemoteDebug
+
+	Cada 15 segundos
+		medir temperaturas
+		medir consumo
+		
+		si el consumo es mayor de 60W
+			activar ventilador
+		si no
+			desactivar ventilador
+			
+		Enviar dato al servicio IoT
+		
+	

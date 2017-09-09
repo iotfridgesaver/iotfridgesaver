@@ -13,7 +13,7 @@ class AverageCalculator
 {
  protected:
      double sum;
-     int32_t accumTime;
+     time_t accumTime;
      float average;
      unsigned long lastMillis;
  public:
