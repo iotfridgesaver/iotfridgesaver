@@ -1,3 +1,5 @@
+#include "AverageCalculator.h"
+#include "AverageCalculator.h"
 #include "ConfigData.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -10,6 +12,8 @@
 #include "WifiManagerSetup.h"
 #include <WiFiManager.h>
 #include <OneButton.h>
+#include <NtpClientLib.h>
+#include <TimeAlarms.h>
 
 //#define TEST
 
@@ -23,6 +27,7 @@ bool OTAupdating;                       ///< Verdadero si se está haciendo una 
 
 #define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
+float aveTemperatures[NUMBER_OF_SENSORS];
 uint8_t tempAmbient_idx;                ///< Índice del sensor que mide la temperatura ambiente
 uint8_t tempRadiator_idx;               ///< Índice del sensor que mide la temperatura del radiador del frigorífico
 uint8_t tempFridge_idx;                 ///< Índice del sensor que mide la temperatura del frigorífico
@@ -48,6 +53,9 @@ String emonCMSwriteApiKey = ""; ///< API key del usuario
 int mainsVoltage = 230;       ///< Tensión de alimentación
 const char *configFileName = "config.json";
 
+TimeAlarmsClass alarmDaily;
+AverageCalculator ambientAverage;
+bool sendAverage = false;
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -358,6 +366,11 @@ void long_click () {
     ESP.restart ();
 }
 
+void getDailyAmbientAverage () {
+    aveTemperatures[tempAmbient_idx] = ambientAverage.reset ();
+    sendAverage = true;
+}
+
 /********************************************//**
 *  Setup
 ***********************************************/
@@ -405,6 +418,8 @@ void setup () {
 #endif // WIFI_MANAGER
     Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
+    NTP.begin ("es.pool.ntp.org", 1, true);
+
 #ifdef DEBUG_ENABLED
     Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
     Serial.printf ("emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
@@ -439,6 +454,8 @@ void setup () {
 
 #endif
     sortSensors (); // Asignar los sensores automáticamente
+
+    alarmDaily.alarmRepeat (0, 0, 0, getDailyAmbientAverage);
 }
 
 /********************************************//**
@@ -475,7 +492,8 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         float tempFridge, 
                         float tempFreezer, 
                         double watts,
-                        int fanOn) {
+                        int fanOn,
+                        float aveTempAmbient = -100) {
 
     WiFiClientSecure client; ///< Cliente TCP con SSL
     const unsigned int maxTimeout = 5000; ///< Tiempo maximo de espera a la respuesta del servidor
@@ -496,6 +514,10 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "\"tempRadiator\":" + String (tempStr) + ",";
     dtostrf (tempAmbient, 3, 3, tempStr);
     httpRequest += "\"tempAmbient\":" + String (tempStr) + ",";
+    if (aveTempAmbient > -100) {
+        dtostrf (tempAmbient, 3, 3, tempStr);
+        httpRequest += "\"aveTempAmbient\":" + String (tempStr) + ",";
+    }
     dtostrf (tempFridge, 3, 3, tempStr);
     httpRequest += "\"tempFridge\":" + String (tempStr) + ",";
     dtostrf (tempFreezer, 3, 3, tempStr);
@@ -557,6 +579,7 @@ void loop () {
         sensors.requestTemperatures ();
         temperatures[tempRadiator_idx] = sensors.getTempCByIndex (tempRadiator_idx);
         temperatures[tempAmbient_idx] = sensors.getTempCByIndex (tempAmbient_idx);
+        ambientAverage.feed (temperatures[tempAmbient_idx]);
         temperatures[tempFridge_idx] = sensors.getTempCByIndex (tempFridge_idx);
         temperatures[tempFreezer_idx] = sensors.getTempCByIndex (tempFreezer_idx);
 
@@ -576,8 +599,13 @@ void loop () {
         Serial.printf ("Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
         Serial.printf ("Consumo: %f\n", watts);
 #endif // DEBUG_ENABLED
-
-        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
+        
+        if (sendAverage) {
+            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed, aveTemperatures[tempAmbient_idx]);
+            sendAverage = false;
+        } else {
+            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
+        }
 
     }
 
