@@ -599,8 +599,8 @@ void loop () {
     double watts;
 
     ArduinoOTA.handle ();
-    Alarm.delay (0);
     button.tick ();
+    Alarm.delay (0);
 
     if (timeChanged) {
 #ifndef TEST
