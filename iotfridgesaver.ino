@@ -550,6 +550,7 @@ void loop () {
     double watts;
 
     ArduinoOTA.handle ();
+    button.tick ();
 
     if (millis () - lastRun > MEASURE_PERIOD) {
         lastRun = millis ();
