@@ -14,7 +14,7 @@
 #include <NtpClientLib.h>
 #include <TimeAlarms.h>
 
-//#define TEST
+#define TEST
 
 //#define EMONLIB
 #define MQTT
@@ -433,6 +433,7 @@ void processSyncEvent (NTPSyncEvent_t ntpEvent) {
 #ifdef MQTTPOWER
 void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
     String powerStr = "";
+    //String topicStr = String (topic);
     
     for (int i = 0; i < length; i++) {
         powerStr += (char)payload[i];
@@ -441,9 +442,13 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
 #ifdef DEBUG_ENABLED
     Serial.printf ("Message arrived [%s]: %s\n", topic, powerStr.c_str());
 #endif
-
-    if (topic == "emon/ccost/1") {
+    
+    if (!strcmp(topic, "emon/ccost/1")) {
         watts = strtod (powerStr.c_str(), NULL);
+#ifdef DEBUG_ENABLED
+        Serial.printf ("Valor traducido %f\n", watts);
+#endif
+
     }
 }
 #endif
