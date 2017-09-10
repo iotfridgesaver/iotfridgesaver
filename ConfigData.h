@@ -15,6 +15,8 @@ const char* WIFI_PASS = "CONTRASEÑA";
 #define FAN_PWM_PIN         D1      ///< Pin para el control de la velocidad del ventilador
 #define MEASURE_PERIOD      60000   ///< Periodo de medida de temperatura y consumo, y envío de los datos al servicio en la nube
 
+const int t_longPress =     10000;   ///< Tiempo para identificar pulsación larga
+
 const int fanThreshold =    60;     ///< Valor en vatios por encima del cual se enciende el ventilador
 
 
