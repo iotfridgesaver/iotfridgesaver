@@ -1,3 +1,5 @@
+#include "AverageCalculator.h"
+#include "AverageCalculator.h"
 #include "ConfigData.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -10,6 +12,8 @@
 #include "WifiManagerSetup.h"
 #include <WiFiManager.h>
 #include <OneButton.h>
+#include <NtpClientLib.h>
+#include <TimeAlarms.h>
 
 //#define TEST
 
@@ -23,6 +27,7 @@ bool OTAupdating;                       ///< Verdadero si se está haciendo una 
 
 #define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
+float aveTemperatures[NUMBER_OF_SENSORS];
 uint8_t tempAmbient_idx;                ///< Índice del sensor que mide la temperatura ambiente
 uint8_t tempRadiator_idx;               ///< Índice del sensor que mide la temperatura del radiador del frigorífico
 uint8_t tempFridge_idx;                 ///< Índice del sensor que mide la temperatura del frigorífico
@@ -48,6 +53,11 @@ String emonCMSwriteApiKey = ""; ///< API key del usuario
 int mainsVoltage = 230;       ///< Tensión de alimentación
 const char *configFileName = "config.json";
 
+TimeAlarmsClass alarmDaily;
+AverageCalculator ambientAverage;
+bool sendAverage = false;
+bool timeChanged = false;
+AlarmID_t alarmID;
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -366,6 +376,25 @@ void long_click () {
     ESP.reset ();
 }
 
+void getDailyAmbientAverage () {
+        aveTemperatures[tempAmbient_idx] = ambientAverage.reset ();
+        sendAverage = true;
+}
+
+void processSyncEvent (NTPSyncEvent_t ntpEvent) {
+    if (ntpEvent) {
+        Serial.print ("Time Sync error: ");
+        if (ntpEvent == noResponse)
+            Serial.println ("NTP server not reachable");
+        else if (ntpEvent == invalidAddress)
+            Serial.println ("Invalid NTP server address");
+    } else {
+        Serial.print ("Got NTP time: ");
+        Serial.println (NTP.getTimeDateString (NTP.getLastNTPSync ()));
+        timeChanged = true;
+    }
+}
+
 /********************************************//**
 *  Setup
 ***********************************************/
@@ -375,6 +404,7 @@ void setup () {
     Serial.begin (115200);
     // Control del ventilador
     analogWrite (FAN_PWM_PIN, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
+    pinMode (FAN_ENABLE_BUTTON, INPUT);
     button.attachClick (button_click);
     button.setPressTicks (t_longPress);
     button.attachPress (long_click);
@@ -413,6 +443,8 @@ void setup () {
 #endif // WIFI_MANAGER
     Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
+    NTP.begin ("es.pool.ntp.org", 1, true);
+
 #ifdef DEBUG_ENABLED
     Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
     Serial.printf ("emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
@@ -447,6 +479,14 @@ void setup () {
 
 #endif
     sortSensors (); // Asignar los sensores automáticamente
+
+#ifndef TEST
+    Alarm.alarmRepeat (0, 0, 1, getDailyAmbientAverage);
+#else
+    Alarm.alarmRepeat (10, 21, 1, getDailyAmbientAverage);
+#endif
+
+    NTP.onNTPSyncEvent (processSyncEvent);
 }
 
 /********************************************//**
@@ -483,7 +523,8 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         float tempFridge, 
                         float tempFreezer, 
                         double watts,
-                        int fanOn) {
+                        int fanOn,
+                        float aveTempAmbient = -100) {
 
     WiFiClientSecure client; ///< Cliente TCP con SSL
     const unsigned int maxTimeout = 5000; ///< Tiempo maximo de espera a la respuesta del servidor
@@ -504,6 +545,10 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "\"tempRadiator\":" + String (tempStr) + ",";
     dtostrf (tempAmbient, 3, 3, tempStr);
     httpRequest += "\"tempAmbient\":" + String (tempStr) + ",";
+    if (aveTempAmbient > -100) {
+        dtostrf (tempAmbient, 3, 3, tempStr);
+        httpRequest += "\"tempAmbient_ave\":" + String (tempStr) + ",";
+    }
     dtostrf (tempFridge, 3, 3, tempStr);
     httpRequest += "\"tempFridge\":" + String (tempStr) + ",";
     dtostrf (tempFreezer, 3, 3, tempStr);
@@ -559,22 +604,36 @@ void loop () {
 
     ArduinoOTA.handle ();
     button.tick ();
+    Alarm.delay (0);
+
+    if (timeChanged) {
+#ifndef TEST
+        alarmID = Alarm.alarmRepeat (0, 0, 1, getDailyAmbientAverage);
+#else
+        alarmID = Alarm.alarmRepeat (16, 46, 0, getDailyAmbientAverage);
+#endif
+        timeChanged = false;
+    }
 
     if (millis () - lastRun > MEASURE_PERIOD) {
         lastRun = millis ();
+
+
 #ifndef TEST
         sensors.requestTemperatures ();
         temperatures[tempRadiator_idx] = sensors.getTempCByIndex (tempRadiator_idx);
         temperatures[tempAmbient_idx] = sensors.getTempCByIndex (tempAmbient_idx);
+        ambientAverage.feed (temperatures[tempAmbient_idx]);
         temperatures[tempFridge_idx] = sensors.getTempCByIndex (tempFridge_idx);
         temperatures[tempFreezer_idx] = sensors.getTempCByIndex (tempFreezer_idx);
 
         watts = getPower ();
 #else
-        temperatures[tempRadiator_idx] = random (35, 40);
-        temperatures[tempAmbient_idx] = random (25, 30);
-        temperatures[tempFridge_idx] = random (0, 10);
-        temperatures[tempFreezer_idx] = random (-20, -15);
+        temperatures[tempRadiator_idx] = random (3500, 4000)/(float)100;
+        temperatures[tempAmbient_idx] = random (2500, 3000) / (float)100;
+        ambientAverage.feed (temperatures[tempAmbient_idx]);
+        temperatures[tempFridge_idx] = random (0, 1000) / (float)100;
+        temperatures[tempFreezer_idx] = random (-2000, -1500) / (float)100;
         watts = random (0,100);
 #endif
 
@@ -585,10 +644,17 @@ void loop () {
         Serial.printf ("Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
         Serial.printf ("Consumo: %f\n", watts);
 #endif // DEBUG_ENABLED
-
-        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
+        
+        if (sendAverage) {
+            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed, aveTemperatures[tempAmbient_idx]);
+            sendAverage = false;
+        } else {
+            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
+        }
 
     }
+
+
 
 
 }
