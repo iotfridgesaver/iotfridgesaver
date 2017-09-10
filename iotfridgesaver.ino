@@ -516,7 +516,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
 
 #ifdef DEBUG_ENABLED
     Serial.printf ("%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
-#endif \\ DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 
     // Envia la peticion
     client.print (httpRequest);
