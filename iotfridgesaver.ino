@@ -1,5 +1,4 @@
 #include "AverageCalculator.h"
-#include "AverageCalculator.h"
 #include "ConfigData.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
