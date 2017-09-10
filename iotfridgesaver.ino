@@ -17,10 +17,16 @@
 
 //#define TEST
 
-#define EMONLIB
+//#define EMONLIB
+#define MQTT
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
 EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
+#elif defined MQTT
+#define MQTTPOWER
+#include <PubSubClient.h>
+WiFiClient client;
+PubSubClient mqttClient (client);
 #endif
 
 bool OTAupdating;                       ///< Verdadero si se está haciendo una actualización OTA
@@ -28,6 +34,7 @@ bool OTAupdating;                       ///< Verdadero si se está haciendo una 
 #define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
 float aveTemperatures[NUMBER_OF_SENSORS];
+double watts;                           ///< Potencia instantánea consumida por el conjunto
 uint8_t tempAmbient_idx;                ///< Índice del sensor que mide la temperatura ambiente
 uint8_t tempRadiator_idx;               ///< Índice del sensor que mide la temperatura del radiador del frigorífico
 uint8_t tempFridge_idx;                 ///< Índice del sensor que mide la temperatura del frigorífico
@@ -51,6 +58,11 @@ String emonCMSserverAddress = "";  ///< Dirección del servidor EmonCMS
 String emonCMSserverPath = "";
 String emonCMSwriteApiKey = ""; ///< API key del usuario
 int mainsVoltage = 230;       ///< Tensión de alimentación
+#ifdef MQTTPOWER
+String mqttServerName = "192.168.5.110";
+uint16_t mqttServerPort = 1883;
+String mqttPowerTopic = "emon/ccost/1";
+#endif
 const char *configFileName = "config.json";
 
 TimeAlarmsClass alarmDaily;
@@ -58,6 +70,30 @@ AverageCalculator ambientAverage;
 bool sendAverage = false;
 bool timeChanged = false;
 AlarmID_t alarmID;
+
+#ifdef MQTTPOWER
+void reconnect () {
+    // Loop until we're reconnected
+    while (!mqttClient.connected ()) {
+        Serial.print ("Attempting MQTT connection...");
+        // Attempt to connect
+        if (mqttClient.connect ("IotFridgeSaver")) {
+            Serial.println ("connected");
+            // Once connected, publish an announcement...
+            mqttClient.publish ("outTopic", "IotFridgeSaver/hello world");
+            // ... and resubscribe
+            //mqttClient.subscribe("inTopic");
+            mqttClient.subscribe (mqttPowerTopic.c_str ());
+        } else {
+            Serial.print ("failed, rc=");
+            Serial.print (mqttClient.state ());
+            Serial.println (" try again in 5 seconds");
+            // Wait 5 seconds before retrying
+            delay (5000);
+        }
+    }
+}
+#endif
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -395,6 +431,24 @@ void processSyncEvent (NTPSyncEvent_t ntpEvent) {
     }
 }
 
+#ifdef MQTTPOWER
+void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
+    String powerStr = "";
+    
+    for (int i = 0; i < length; i++) {
+        powerStr += (char)payload[i];
+    }
+
+#ifdef DEBUG_ENABLED
+    Serial.printf ("Message arrived [%s]: %s\n", topic, powerStr.c_str());
+#endif
+
+    if (topic == "emon/ccost/1") {
+        watts = strtod (powerStr.c_str(), NULL);
+    }
+}
+#endif
+
 /********************************************//**
 *  Setup
 ***********************************************/
@@ -452,6 +506,11 @@ void setup () {
     Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
 
+#ifdef MQTTPOWER
+    mqttClient.setServer(mqttServerName.c_str(), mqttServerPort);
+    mqttClient.setCallback (getPowerMeasurement);
+#endif
+
     MDNS.begin ("FridgeSaverMonitor"); //Iniciar servidor MDNS para llamar al dispositivo como FridgeSaverMonitor.local
 
     OTASetup ();
@@ -499,7 +558,7 @@ double getPower () {
     watts = emon1.calcIrms (1480) * mainsVoltage;  // Calculate Irms * V. Aparent power
 #endif
 
-#ifdef EMONLIB
+#if defined EMONLIB || defined MQTTPOWER
     //fanEnabled = digitalRead (FAN_ENABLE_BUTTON);
     if (fanEnabled && watts > fanThreshold) { // Si el consumo > 60W
 #else
@@ -600,7 +659,6 @@ int8_t sendDataEmonCMS (float tempRadiator,
 ***********************************************/
 void loop () {
     static long lastRun = 0;
-    double watts;
 
     ArduinoOTA.handle ();
     button.tick ();
@@ -626,15 +684,18 @@ void loop () {
         ambientAverage.feed (temperatures[tempAmbient_idx]);
         temperatures[tempFridge_idx] = sensors.getTempCByIndex (tempFridge_idx);
         temperatures[tempFreezer_idx] = sensors.getTempCByIndex (tempFreezer_idx);
-
+#ifdef EMONLIB
         watts = getPower ();
+#endif //EMONLIB
 #else
         temperatures[tempRadiator_idx] = random (3500, 4000)/(float)100;
         temperatures[tempAmbient_idx] = random (2500, 3000) / (float)100;
         ambientAverage.feed (temperatures[tempAmbient_idx]);
         temperatures[tempFridge_idx] = random (0, 1000) / (float)100;
         temperatures[tempFreezer_idx] = random (-2000, -1500) / (float)100;
+#ifndef MQTTPOWER
         watts = random (0,100);
+#endif //MQTTPOWER
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -654,7 +715,12 @@ void loop () {
 
     }
 
-
-
+#ifdef MQTTPOWER
+    if (!client.connected ()) {
+        Serial.println ("MQTT Reconnect");
+        reconnect ();
+    }
+    mqttClient.loop ();
+#endif
 
 }
