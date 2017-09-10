@@ -35,7 +35,7 @@ OneWire oneWire (ONE_WIRE_BUS);         ///< Instancia OneWire para comunicar co
 DallasTemperature sensors (&oneWire);   ///< Pasar el bus de datos como referencia
 const int minTemperature = -100;        ///< Temperatura mínima válida
 
-OneButton button (FAN_ENABLE_BUTTON, false);
+OneButton button (FAN_ENABLE_BUTTON, true);
 bool fanEnabled = true;                 ///< Verdadero si el ventilador está activado
 int fanSpeed = 0;                       ///< Velocidad del ventilador
 
@@ -351,11 +351,19 @@ void startWifiManager (MyWiFiManager &wifiManager) {
 
 void button_click () {
     fanEnabled = !fanEnabled;
+#ifdef DEBUG_ENABLED
+    Serial.printf ("Ventilador %s\n", fanEnabled ? "activado" : "desactivado");
+#endif // DEBUG_ENABLED
 }
 
 void long_click () {
-    WiFi.disconnect ();
-    ESP.restart ();
+#ifdef DEBUG_ENABLED
+    Serial.println ("---------------Reset config");
+#endif // DEBUG_ENABLED
+    //wifiManager.resetSettings ();
+    WiFi.disconnect (true);
+    delay (1000);
+    ESP.reset ();
 }
 
 /********************************************//**
