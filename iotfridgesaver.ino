@@ -10,6 +10,13 @@
 #include "WifiManagerSetup.h"
 #include <WiFiManager.h>
 #include <OneButton.h>
+#include <RemoteDebug.h>
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <Arduino.h>
 
 //#define TEST
 
@@ -20,6 +27,7 @@ EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
 #endif
 
 bool OTAupdating;                       ///< Verdadero si se está haciendo una actualización OTA
+RemoteDebug Debug;
 
 #define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
@@ -48,6 +56,31 @@ String emonCMSwriteApiKey = ""; ///< API key del usuario
 int mainsVoltage = 230;       ///< Tensión de alimentación
 const char *configFileName = "config.json";
 
+void debugPrintf (uint8_t debugLevel, const char* format, ...) {
+    if (Debug.isActive (debugLevel)) {
+        va_list argptr;
+        va_start (argptr, format);
+        char temp[64];
+        char* buffer = temp;
+        size_t len = vsnprintf (temp, sizeof (temp), format, argptr);
+        Debug.print(temp);
+        va_end (argptr);
+        /*if (len > sizeof (temp) - 1) {
+            buffer = new char[len + 1];
+            if (!buffer) {
+                return;
+            }
+            va_start (argptr, format);
+            vsnprintf (buffer, len + 1, format, argptr);
+            va_end (argptr);
+        }
+        Debug.write ((const uint8_t*)buffer, len);
+        if (buffer != temp) {
+            delete[] buffer;
+        }*/
+        //Debug.printf (format, argptr);
+    }
+}
 
 /********************************************//**
 *  Función para buscar la posición del valor máximo en el array de temperaturas
@@ -111,14 +144,10 @@ void sortSensors () {
 
 
 #ifdef DEBUG_ENABLED
-    Serial.print ("Posicion sensor radiador: ");
-    Serial.println (tempRadiator_idx);
-    Serial.print ("Posicion sensor ambiente: ");
-    Serial.println (tempAmbient_idx);
-    Serial.print ("Posicion sensor frigorifico: ");
-    Serial.println (tempFridge_idx);
-    Serial.print ("Posicion sensor congelador: ");
-    Serial.println (tempFreezer_idx);
+    debugPrintf (Debug.INFO, "Posicion sensor radiador: %d\n", tempRadiator_idx);
+    debugPrintf (Debug.INFO, "Posicion sensor ambiente: %d\n", tempAmbient_idx);
+    debugPrintf (Debug.INFO, "Posicion sensor frigorifico: %d\n", tempFridge_idx);
+    debugPrintf (Debug.INFO, "Posicion sensor congelador: %d\n", tempFreezer_idx);
 
 #endif
 
@@ -134,7 +163,7 @@ uint8_t initTempSensors () {
     uint8_t numberOfDevices;            ///< Número de sensores encontrados
 
 #ifdef DEBUG_ENABLED
-    Serial.println ("Init Dallas Temperature Control Library");
+    debugPrintf (Debug.INFO, "Init Dallas Temperature Control Library\n");
 #endif
 
     // Inicializar el bus de los sensores de temperatura 
@@ -144,16 +173,8 @@ uint8_t initTempSensors () {
     numberOfDevices = sensors.getDeviceCount ();
 
 #ifdef DEBUG_ENABLED
-    Serial.print ("Locating devices...");
-    Serial.print ("Found ");
-    Serial.print (numberOfDevices, DEC);
-    Serial.println (" devices.");
-
-    Serial.print ("Parasite power is: ");
-    if (sensors.isParasitePowerMode ())
-        Serial.println ("ON");
-    else
-        Serial.println ("OFF");
+    debugPrintf (Debug.INFO, "Locating devices...Found %u devices.\n", numberOfDevices);
+    debugPrintf (Debug.INFO, "Parasite power is: %s\n", sensors.isParasitePowerMode ()?"ON":"OFF");
 #endif
 
     // Ajustar la precisión de todos los sensores
@@ -164,23 +185,10 @@ uint8_t initTempSensors () {
     for (int i = 0; i < numberOfDevices; i++) {
         // Search the wire for address
         if (sensors.getAddress (tempDeviceAddress, i)) {
-
-            Serial.print ("Found device ");
-            Serial.print (i, DEC);
-            Serial.print ("Setting resolution to ");
-            Serial.println (TEMPERATURE_PRECISION, DEC);
-
-            Serial.print ("Resolution actually set to: ");
-            Serial.print (sensors.getResolution (tempDeviceAddress), DEC);
-            Serial.println ();
-
-
+            debugPrintf (Debug.INFO, "Found device %u. Setting resolution to %d\n", i, TEMPERATURE_PRECISION);
+            debugPrintf (Debug.INFO, "Resolution actually set to: %u\n", sensors.getResolution (tempDeviceAddress));
         } else {
-
-            Serial.print ("Found ghost device at ");
-            Serial.print (i, DEC);
-            Serial.print (" but could not detect address. Check power and cabling");
-
+            debugPrintf (Debug.INFO, "Found ghost device at %u but could not detect address. Check power and cabling\n", i);
         }
 
     }
@@ -191,7 +199,7 @@ uint8_t initTempSensors () {
 
 void configModeCallback () {
 #ifdef DEBUG_ENABLED
-    Serial.printf ("%s: Guardar configuración\n", __FUNCTION__);
+    debugPrintf (Debug.INFO, "%s: Guardar configuración\n", __FUNCTION__);
 #endif // DEBUG_ENABLED
     shouldSaveConfig = true;
 }
@@ -204,15 +212,15 @@ void getCustomData (MyWiFiManager &wifiManager) {
     mainsVoltage = wifiManager.getMainsVoltage ();
 
 #ifdef DEBUG_ENABLED
-    Serial.printf ("Servidor: %s\n", emonCMSserverAddress.c_str ());
-    Serial.printf ("Ruta: %s\n", emonCMSserverPath.c_str ());
-    Serial.printf ("API Key: %s\n", emonCMSwriteApiKey.c_str ());
-    Serial.printf ("Tensión: %d\n", mainsVoltage);
+    debugPrintf (Debug.INFO, "Servidor: %s\n", emonCMSserverAddress.c_str ());
+    debugPrintf (Debug.INFO, "Ruta: %s\n", emonCMSserverPath.c_str ());
+    debugPrintf (Debug.INFO, "API Key: %s\n", emonCMSwriteApiKey.c_str ());
+    debugPrintf (Debug.INFO, "Tensión: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
 
     if (mainsVoltage == 0) {
 #ifdef DEBUG_ENABLED
-        Serial.println ("ERROR. Tensión debe ser un número");
+        debugPrintf (Debug.INFO, "ERROR. Tensión debe ser un número\n");
 #endif // DEBUG_ENABLED
         wifiManager.resetSettings ();
         delay (1000);
@@ -227,22 +235,22 @@ void loadConfigData () {
 
     //read configuration from FS json
 #ifdef DEBUG_ENABLED
-    Serial.println ("Montando sistema de archivos...");
+    debugPrintf (Debug.INFO, "Montando sistema de archivos...\n");
 #endif // DEBUG_ENABLED
 
     if (SPIFFS.begin ()) {
 #ifdef DEBUG_ENABLED
-        Serial.printf ("Sistema de archivos montado. Abriendo %s\n", configFileName);
+        debugPrintf (Debug.INFO, "Sistema de archivos montado. Abriendo %s\n", configFileName);
 #endif // DEBUG_ENABLED
         if (SPIFFS.exists (configFileName)) {
             //file exists, reading and loading
 #ifdef DEBUG_ENABLED
-            Serial.printf ("Leyendo el archivo de configuración: %s\n", configFileName);
+            debugPrintf (Debug.INFO, "Leyendo el archivo de configuración: %s\n", configFileName);
 #endif // DEBUG_ENABLED
             File configFile = SPIFFS.open (configFileName, "r");
             if (configFile) {
 #ifdef DEBUG_ENABLED
-                Serial.println ("Archivo de configuración abierto");
+                debugPrintf (Debug.INFO, "Archivo de configuración abierto\n");
 #endif // DEBUG_ENABLED
                 size_t size = configFile.size ();
                 // Allocate a buffer to store contents of the file.
@@ -252,11 +260,12 @@ void loadConfigData () {
                 DynamicJsonBuffer jsonBuffer;
                 JsonObject& json = jsonBuffer.parseObject (buf.get ());
 #ifdef DEBUG_ENABLED
-                json.printTo (Serial);
+                if (Debug.isActive(Debug.INFO))
+                    json.printTo (Debug);
 #endif // DEBUG_ENABLED
                 if (json.success ()) {
 #ifdef DEBUG_ENABLED
-                    Serial.println ("\nparsed json");
+                    debugPrintf (Debug.INFO, "\nparsed json\n");
 #endif // DEBUG_ENABLED
 
                     //strcpy (mqtt_server, json["mqtt_server"]);
@@ -266,10 +275,10 @@ void loadConfigData () {
                     mainsVoltage = json.get<int> ("mainsVoltage");
 
 #ifdef DEBUG_ENABLED
-                    Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
-                    Serial.printf ("emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
-                    Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
-                    Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
+                    debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
+                    debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
+                    debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
+                    debugPrintf (Debug.INFO, "mainsVoltage: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
 
                     //strcpy (mqtt_port, json["mqtt_port"]);
@@ -278,26 +287,26 @@ void loadConfigData () {
                 } 
 #ifdef DEBUG_ENABLED
                 else {
-                    Serial.println ("Error al leer el archivo de configuración");
+                    debugPrintf (Debug.INFO, "Error al leer el archivo de configuración\n");
                 }
 #endif // DEBUG_ENABLED
             } 
 #ifdef DEBUG_ENABLED
             else {
-                Serial.println ("Error al abrir el archivo de configuración");
+                debugPrintf (Debug.INFO, "Error al abrir el archivo de configuración\n");
             }
 #endif // DEBUG_ENABLED
         } 
 #ifdef DEBUG_ENABLED
         else {
-            Serial.println ("El archivo de configuración no existe");
+            debugPrintf (Debug.INFO, "El archivo de configuración no existe\n");
         }
 #endif // DEBUG_ENABLED
 
         SPIFFS.end ();
     } else {
 #ifdef DEBUG_ENABLED
-        Serial.println ("Error al abrir el sistema de archivos. Formateando");
+        debugPrintf (Debug.INFO, "Error al abrir el sistema de archivos. Formateando\n");
 #endif // DEBUG_ENABLED
         SPIFFS.format ();
         SPIFFS.end ();
@@ -309,7 +318,7 @@ void loadConfigData () {
 
 void saveConfigData () {
 #ifdef DEBUG_ENABLED
-    Serial.println ("saving config");
+    debugPrintf (Debug.INFO, "saving config\n");
 #endif // DEBUG_ENABLED
     if (SPIFFS.begin ()) {
         DynamicJsonBuffer jsonBuffer;
@@ -322,21 +331,20 @@ void saveConfigData () {
         File configFile = SPIFFS.open (configFileName, "w");
         if (!configFile) {
 #ifdef DEBUG_ENABLED
-            Serial.println ("Error al abrir el archivo de configuración");
+            debugPrintf (Debug.INFO, "Error al abrir el archivo de configuración\n");
 #endif // DEBUG_ENABLED
             return;
         }
 
 #ifdef DEBUG_ENABLED
-        json.prettyPrintTo (Serial);
-        Serial.println ();
+        json.prettyPrintTo (Debug);
 #endif // DEBUG_ENABLED
         json.printTo (configFile);
         configFile.close ();
     } 
 #ifdef DEBUG_ENABLED
     else {
-        Serial.printf ("Error al montar el sistema de archivos");
+        debugPrintf (Debug.INFO, "Error al montar el sistema de archivos\n");
     }
 #endif // DEBUG_ENABLED
     SPIFFS.end ();
@@ -352,13 +360,13 @@ void startWifiManager (MyWiFiManager &wifiManager) {
 void button_click () {
     fanEnabled = !fanEnabled;
 #ifdef DEBUG_ENABLED
-    Serial.printf ("Ventilador %s\n", fanEnabled ? "activado" : "desactivado");
+    debugPrintf (Debug.INFO, "Ventilador %s\n", fanEnabled ? "activado" : "desactivado");
 #endif // DEBUG_ENABLED
 }
 
 void long_click () {
 #ifdef DEBUG_ENABLED
-    Serial.println ("---------------Reset config");
+    debugPrintf (Debug.INFO, "---------------Reset config\n");
 #endif // DEBUG_ENABLED
     //wifiManager.resetSettings ();
     WiFi.disconnect (true);
@@ -378,6 +386,12 @@ void setup () {
     button.attachClick (button_click);
     button.setPressTicks (t_longPress);
     button.attachPress (long_click);
+
+#ifdef DEBUG_SERIAL
+    Debug.setSerialEnabled (true);
+#else
+    Debug.showColors (true);
+#endif // DEBUG_SERIAL
 
 #ifdef WIFI_MANAGER
     //leer datos de la flash
@@ -403,21 +417,21 @@ void setup () {
     //--------------------- Conectar a la red WiFi -------------------------
     WiFi.begin (WIFI_SSID, WIFI_PASS);
 
-    Serial.printf ("Conectando a la red %s ", WIFI_SSID);
+    debugPrintf (Debug.INFO, "Conectando a la red %s ", WIFI_SSID);
 
     while (!WiFi.isConnected ()) {
-        Serial.print (".");
+        debugPrintf (Debug.INFO, ".");
         delay (500);
     }
     //----------------------------------------------------------------------
 #endif // WIFI_MANAGER
-    Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
+    debugPrintf (Debug.INFO, "Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
 #ifdef DEBUG_ENABLED
-    Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
-    Serial.printf ("emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
-    Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
-    Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
+    debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
+    debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
+    debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
+    debugPrintf (Debug.INFO, "mainsVoltage: %d\n", mainsVoltage);
 #endif // DEBUG_ENABLED
 
     MDNS.begin ("FridgeSaverMonitor"); //Iniciar servidor MDNS para llamar al dispositivo como FridgeSaverMonitor.local
@@ -439,7 +453,7 @@ void setup () {
         numberOfDevices = initTempSensors ();
         if (numberOfDevices != NUMBER_OF_SENSORS) {
 #ifdef DEBUG_ENABLED
-            Serial.printf ("Error en el numero de sensores: %d\n", numberOfDevices);
+            debugPrintf (Debug.INFO, "Error en el numero de sensores: %d\n", numberOfDevices);
 #endif // DEBUG_ENABLED
             delay (1000);
         }
@@ -493,7 +507,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     // Conecta al servidor
     if (!client.connect (emonCMSserverAddress.c_str (), 443)) {
 #ifdef DEBUG_ENABLED
-        Serial.printf ("Error al conectar al servidor EmonCMS en %s\n", emonCMSserverAddress.c_str ());
+        debugPrintf (Debug.INFO, "Error al conectar al servidor EmonCMS en %s\n", emonCMSserverAddress.c_str ());
 #endif
         return -1; // Error de conexión
     }
@@ -515,7 +529,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "Host: " + emonCMSserverAddress + "\r\n\r\n";
 
 #ifdef DEBUG_ENABLED
-    Serial.printf ("%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
+    debugPrintf (Debug.INFO, "%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
 #endif // DEBUG_ENABLED
 
     // Envia la peticion
@@ -526,7 +540,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     while (!client.available ()) {
         if (millis () - timeout > maxTimeout) {
 #ifdef DEBUG_ENABLED
-            Serial.printf ("%s: EmonCMS client Timeout !", __FUNCTION__);
+            debugPrintf (Debug.INFO, "%s: EmonCMS client Timeout !", __FUNCTION__);
 #endif
             client.stop ();
             return -2; // Timeout
@@ -537,14 +551,14 @@ int8_t sendDataEmonCMS (float tempRadiator,
     while (client.available ()) {
         String line = client.readStringUntil ('\n');
 #ifdef DEBUG_ENABLED
-        Serial.printf ("%s: Response: %s\n", __FUNCTION__, line.c_str ());
+        debugPrintf (Debug.INFO, "%s: Response: %s\n", __FUNCTION__, line.c_str ());
 #endif
     }
 
     client.stop (); // Desconecta el cliente
 
 #ifdef DEBUG_ENABLED
-    Serial.printf ("%s: Data sent !!!\n", __FUNCTION__);
+    debugPrintf (Debug.INFO, "%s: Data sent !!!\n", __FUNCTION__);
 #endif // DEBUG
 
     return 0; // OK
@@ -559,6 +573,7 @@ void loop () {
 
     ArduinoOTA.handle ();
     button.tick ();
+    Debug.handle ();
 
     if (millis () - lastRun > MEASURE_PERIOD) {
         lastRun = millis ();
@@ -579,11 +594,11 @@ void loop () {
 #endif
 
 #ifdef DEBUG_ENABLED
-        Serial.printf ("Temperatura radiador: %f\n", temperatures[tempRadiator_idx]);
-        Serial.printf ("Temperatura ambiente: %f\n", temperatures[tempAmbient_idx]);
-        Serial.printf ("Temperatura frigorifico: %f\n", temperatures[tempFridge_idx]);
-        Serial.printf ("Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
-        Serial.printf ("Consumo: %f\n", watts);
+        debugPrintf (Debug.INFO, "Temperatura radiador: %f\n", temperatures[tempRadiator_idx]);
+        debugPrintf (Debug.INFO, "Temperatura ambiente: %f\n", temperatures[tempAmbient_idx]);
+        debugPrintf (Debug.INFO, "Temperatura frigorifico: %f\n", temperatures[tempFridge_idx]);
+        debugPrintf (Debug.INFO, "Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
+        debugPrintf (Debug.INFO, "Consumo: %f\n", watts);
 #endif // DEBUG_ENABLED
 
         sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
