@@ -14,15 +14,10 @@
 #include <NtpClientLib.h>
 #include <TimeAlarms.h>
 
-#define TEST
-
-//#define EMONLIB
-#define MQTT
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
 EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
 #elif defined MQTT
-#define MQTTPOWER
 #include <PubSubClient.h>
 WiFiClient client;
 PubSubClient mqttClient (client);
@@ -61,6 +56,7 @@ int mainsVoltage = 230;       ///< Tensión de alimentación
 String mqttServerName = "192.168.5.110";
 uint16_t mqttServerPort = 1883;
 String mqttPowerTopic = "emon/ccost/1";
+bool mqttStarted = false;
 #endif
 const char *configFileName = "config.json";
 
@@ -310,11 +306,23 @@ void loadConfigData () {
                     emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
                     mainsVoltage = json.get<int> ("mainsVoltage");
 
+#ifdef MQTTPOWER
+                    mqttServerName = json.get<String> ("mqttServerName");
+                    mqttServerPort = json.get<int> ("mqttServerPort");
+                    mqttPowerTopic = json.get<String> ("mqttPowerTopic");
+#endif
+
 #ifdef DEBUG_ENABLED
                     Serial.printf ("emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
                     Serial.printf ("emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
                     Serial.printf ("emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
                     Serial.printf ("mainsVoltage: %d\n", mainsVoltage);
+#ifdef MQTTPOWER
+                    Serial.printf ("mqttServerName: %s\n", mqttServerName.c_str ());
+                    Serial.printf ("mqttServerPort: %d\n", mqttServerPort);
+                    Serial.printf ("mqttPowerTopic: %s\n", mqttPowerTopic.c_str ());
+#endif
+
 #endif // DEBUG_ENABLED
 
                     //strcpy (mqtt_port, json["mqtt_port"]);
@@ -363,6 +371,12 @@ void saveConfigData () {
         json["emonCMSpath"] = emonCMSserverPath;
         json["emonCMSapiKey"] = emonCMSwriteApiKey;
         json["mainsVoltage"] = mainsVoltage;
+
+#ifdef MQTTPOWER
+        json["mqttServerName"] = mqttServerName;
+        json["mqttServerPort"] = mqttServerPort;
+        json["mqttPowerTopic"] = mqttPowerTopic;
+#endif
 
         File configFile = SPIFFS.open (configFileName, "w");
         if (!configFile) {
@@ -511,8 +525,11 @@ void setup () {
 #endif // DEBUG_ENABLED
 
 #ifdef MQTTPOWER
-    mqttClient.setServer(mqttServerName.c_str(), mqttServerPort);
-    mqttClient.setCallback (getPowerMeasurement);
+    if (mqttServerName != "" && mqttServerPort != 0) {
+        mqttClient.setServer (mqttServerName.c_str (), mqttServerPort);
+        mqttClient.setCallback (getPowerMeasurement);
+        mqttStarted = true;
+    }
 #endif
 
     MDNS.begin ("FridgeSaverMonitor"); //Iniciar servidor MDNS para llamar al dispositivo como FridgeSaverMonitor.local
@@ -720,11 +737,14 @@ void loop () {
     }
 
 #ifdef MQTTPOWER
-    if (!client.connected ()) {
-        Serial.println ("MQTT Reconnect");
-        reconnect ();
+    if (mqttStarted) {
+        if (!client.connected ()) {
+            Serial.println ("MQTT Reconnect");
+            reconnect ();
+        }
+        mqttClient.loop ();
+
     }
-    mqttClient.loop ();
 #endif
 
 }

@@ -2,8 +2,17 @@
 #ifndef _CONFIGDATA_h
 #define _CONFIGDATA_h
 
+#define TEST
 #define DEBUG_ENABLED
 #define WIFI_MANAGER
+#define MQTT
+//#define EMONLIB
+#ifndef EMONLIB
+#ifdef MQTT
+#define MQTTPOWER
+#endif // MQTT
+#endif // EMONLIB
+
 
 #ifndef WIFI_MANAGER
 const char* WIFI_SSID = "NOMBRE_DE_MI_RED";

@@ -10,6 +10,7 @@
 #endif
 
 #include <WiFiManager.h>    // https://github.com/tzapu/WiFiManager
+#include "ConfigData.h"
 
 class MyWiFiManager : public WiFiManager {
 protected:
@@ -19,6 +20,12 @@ protected:
     WiFiManagerParameter * _emonCMSserverPathCParam;
     WiFiManagerParameter * _emonCMSwriteApiKeyCParam;
     WiFiManagerParameter * _mainsVoltageCParam;
+#ifdef MQTTPOWER
+    WiFiManagerParameter * _MQTTserverCParam;
+    WiFiManagerParameter * _MQTTtopicCParam;
+    WiFiManagerParameter * _MQTTportCParam;
+#endif
+
     /*String emonCMSserverAddress;
     String emonCMSwriteApiKey;
     int mainsVoltage;*/
@@ -28,6 +35,11 @@ public:
     String getEmonCMSserverAddress ();
     String getEmonCMSserverPath ();
     String getEmonCMSwriteApiKey ();
+#ifdef MQTTPOWER
+    String getMQTTserver ();
+    int16_t getMQTTport ();
+    String getMQTTtopic ();
+#endif
     int getMainsVoltage ();
 };
 
