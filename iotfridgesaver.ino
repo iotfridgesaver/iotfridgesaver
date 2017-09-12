@@ -745,9 +745,24 @@ void loop () {
         
         if (sendAverage) {
             sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed, aveTemperatures[tempAmbient_idx]);
+            
+            mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str ());
+            mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
+            mqttClient.publish ("iotfridgesaver/tempAmbient_ave", String (aveTemperatures[tempAmbient_idx]).c_str (), true);
+            mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
+            mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
+            mqttClient.publish ("iotfridgesaver/watts", String (watts).c_str ());
+            mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
+
             sendAverage = false;
         } else {
             sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
+            mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str());
+            mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
+            mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
+            mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
+            mqttClient.publish ("iotfridgesaver/watts", String (watts).c_str ());
+            mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
         }
 
     }
