@@ -7,6 +7,8 @@
 #include <TimeLib.h>
 #endif
 
+extern void debugPrintf (uint8_t debugLevel, const char* format, ...);
+
 float_t AverageCalculator::feed (float value) {
     unsigned long nowTime = millis ();
     unsigned int interval = (nowTime - lastMillis)/1000; // Valor en segundos
@@ -17,12 +19,12 @@ float_t AverageCalculator::feed (float value) {
     if (accumTime != 0)
         average = sum / accumTime;
 #ifdef DEBUG_ENABLED
-    Serial.printf ("%02d:%02d:%02d\n", hour (), minute (), second ());
-    Serial.printf ("%s --> Valor alimentado: %f\n", __FUNCTION__, value);
-    Serial.printf ("%s --> Intervalo: %u\n", __FUNCTION__, interval);
-    Serial.printf ("%s --> Tiempo acumulado: %u\n", __FUNCTION__, accumTime);
-    Serial.printf ("%s --> Acumulador temperatura: %f\n", __FUNCTION__, sum);
-    Serial.printf ("%s --> Media: %f\n", __FUNCTION__, average);
+    debugPrintf (Debug.INFO, "%02d:%02d:%02d\n", hour (), minute (), second ());
+    debugPrintf (Debug.INFO, "%s --> Valor alimentado: %f\n", __FUNCTION__, value);
+    debugPrintf (Debug.INFO, "%s --> Intervalo: %u\n", __FUNCTION__, interval);
+    debugPrintf (Debug.INFO, "%s --> Tiempo acumulado: %u\n", __FUNCTION__, accumTime);
+    debugPrintf (Debug.INFO, "%s --> Acumulador temperatura: %f\n", __FUNCTION__, sum);
+    debugPrintf (Debug.INFO, "%s --> Media: %f\n", __FUNCTION__, average);
 #endif
 
     return average;
@@ -33,7 +35,7 @@ float_t AverageCalculator::reset () {
     sum = 0;
     accumTime = 0;
     //lastMillis = millis ();
-    Serial.printf ("%s ------> Media: %f\n", __FUNCTION__, average);
+    debugPrintf (Debug.INFO, "%s ------> Media: %f\n", __FUNCTION__, average);
 
     return lastAve;
 }
