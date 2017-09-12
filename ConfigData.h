@@ -2,17 +2,12 @@
 #ifndef _CONFIGDATA_h
 #define _CONFIGDATA_h
 
-#define TEST
+//#define TEST
 #define DEBUG_ENABLED
 #define DEBUG_SERIAL
 #define WIFI_MANAGER
 #define MQTT
 //#define EMONLIB
-#ifndef EMONLIB
-#ifdef MQTT
-#define MQTTPOWER
-#endif // MQTT
-#endif // EMONLIB
 
 
 #ifndef WIFI_MANAGER

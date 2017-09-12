@@ -20,7 +20,7 @@ protected:
     WiFiManagerParameter * _emonCMSserverPathCParam;
     WiFiManagerParameter * _emonCMSwriteApiKeyCParam;
     WiFiManagerParameter * _mainsVoltageCParam;
-#ifdef MQTTPOWER
+#ifdef MQTT
     WiFiManagerParameter * _MQTTserverCParam;
     WiFiManagerParameter * _MQTTtopicCParam;
     WiFiManagerParameter * _MQTTportCParam;
@@ -35,7 +35,7 @@ public:
     String getEmonCMSserverAddress ();
     String getEmonCMSserverPath ();
     String getEmonCMSwriteApiKey ();
-#ifdef MQTTPOWER
+#ifdef MQTT
     String getMQTTserver ();
     int16_t getMQTTport ();
     String getMQTTtopic ();

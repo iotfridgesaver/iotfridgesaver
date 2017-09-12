@@ -42,7 +42,7 @@ void MyWiFiManager::init() {
     _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
     _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
 
-#ifdef MQTTPOWER
+#ifdef MQTT
     _MQTTserverCParam = new WiFiManagerParameter ("mqtt_server", "MQTT server", "", MAX_STRING_LENGTH);
     _MQTTportCParam = new WiFiManagerParameter ("mqtt_port", "MQTT server port", "1883", MAX_STRING_LENGTH);
     _MQTTtopicCParam = new WiFiManagerParameter ("mqtt_topic", "MQTT topic", "", MAX_STRING_LENGTH);
@@ -55,7 +55,7 @@ void MyWiFiManager::init() {
     addParameter(_emonCMSwriteApiKeyCParam);
     addParameter (_mainsVoltageCParam);
 
-#ifdef MQTTPOWER
+#ifdef MQTT
     addParameter (_MQTTserverCParam);
     addParameter (_MQTTportCParam);
     addParameter (_MQTTtopicCParam);
@@ -69,7 +69,7 @@ void MyWiFiManager::init() {
     }
 }
 
-#ifdef MQTTPOWER
+#ifdef MQTT
 String MyWiFiManager::getMQTTserver () {
     const char * charStr = _MQTTserverCParam->getValue ();
     return String (charStr);
