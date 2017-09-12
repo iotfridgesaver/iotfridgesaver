@@ -4,6 +4,7 @@
 
 #define TEST
 #define DEBUG_ENABLED
+#define DEBUG_SERIAL
 #define WIFI_MANAGER
 #define MQTT
 //#define EMONLIB
