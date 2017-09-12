@@ -5,9 +5,9 @@
 #include "AverageCalculator.h"
 #ifdef DEBUG_ENABLED
 #include <TimeLib.h>
-#endif
-
+extern RemoteDebug Debug;
 extern void debugPrintf (uint8_t debugLevel, const char* format, ...);
+#endif
 
 float_t AverageCalculator::feed (float value) {
     unsigned long nowTime = millis ();
@@ -35,7 +35,7 @@ float_t AverageCalculator::reset () {
     sum = 0;
     accumTime = 0;
     //lastMillis = millis ();
-    debugPrintf (Debug.INFO, "%s ------> Media: %f\n", __FUNCTION__, average);
+    Serial.printf("%s ------> Media: %f\n", __FUNCTION__, average);
 
     return lastAve;
 }
