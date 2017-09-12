@@ -80,19 +80,17 @@ AlarmID_t alarmID;
 void reconnect () {
     // Loop until we're reconnected
     while (!mqttClient.connected ()) {
-        Serial.print ("Attempting MQTT connection...");
+        debugPrintf (Debug.INFO, "Attempting MQTT connection...");
         // Attempt to connect
         if (mqttClient.connect ("IotFridgeSaver")) {
-            Serial.println ("connected");
+            debugPrintf (Debug.INFO, "connected\n");
             // Once connected, publish an announcement...
             mqttClient.publish ("outTopic", "IotFridgeSaver/hello world");
             // ... and resubscribe
             //mqttClient.subscribe("inTopic");
             mqttClient.subscribe (mqttPowerTopic.c_str ());
         } else {
-            Serial.print ("failed, rc=");
-            Serial.print (mqttClient.state ());
-            Serial.println (" try again in 5 seconds");
+            debugPrintf (Debug.INFO, "failed, rc=%d try again in 5 seconds\n", mqttClient.state ());
             // Wait 5 seconds before retrying
             delay (5000);
         }
@@ -444,14 +442,13 @@ void getDailyAmbientAverage () {
 
 void processSyncEvent (NTPSyncEvent_t ntpEvent) {
     if (ntpEvent) {
-        Serial.print ("Time Sync error: ");
+        debugPrintf (Debug.INFO, "%s Time Sync error: ", __FUNCTION__);
         if (ntpEvent == noResponse)
-            Serial.println ("NTP server not reachable");
+            debugPrintf (Debug.INFO, "NTP server not reachable\n");
         else if (ntpEvent == invalidAddress)
-            Serial.println ("Invalid NTP server address");
+            debugPrintf (Debug.INFO, "Invalid NTP server address\n");
     } else {
-        Serial.print ("Got NTP time: ");
-        Serial.println (NTP.getTimeDateString (NTP.getLastNTPSync ()));
+        debugPrintf (Debug.INFO, "%s Got NTP time: %s\n", __FUNCTION__, NTP.getTimeDateString (NTP.getLastNTPSync ()));
         timeChanged = true;
     }
 }
@@ -466,13 +463,13 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
     }
 
 #ifdef DEBUG_ENABLED
-    Serial.printf ("Message arrived [%s]: %s\n", topic, powerStr.c_str());
+    debugPrintf (Debug.INFO, "Message arrived [%s]: %s\n", topic, powerStr.c_str());
 #endif
     
     if (!strcmp(topic, "emon/ccost/1")) {
         watts = strtod (powerStr.c_str(), NULL);
 #ifdef DEBUG_ENABLED
-        Serial.printf ("Valor traducido %f\n", watts);
+        debugPrintf (Debug.INFO, "Valor traducido %f\n", watts);
 #endif
 
     }
@@ -758,7 +755,7 @@ void loop () {
 #ifdef MQTTPOWER
     if (mqttStarted) {
         if (!client.connected ()) {
-            Serial.println ("MQTT Reconnect");
+            debugPrintf (Debug.INFO, "MQTT Reconnect");
             reconnect ();
         }
         mqttClient.loop ();
