@@ -16,13 +16,6 @@
 #include <TimeAlarms.h>
 #include <RemoteDebug.h>
 
-//#include <stdlib.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <math.h>
-//#include <Arduino.h>
-
-
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
 EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
@@ -101,7 +94,6 @@ void debugPrintf (uint8_t debugLevel, const char* format, ...) {
         //Debug.printf (format, argptr);
     }
 }
-
 
 #ifdef MQTT
 void reconnect () {
