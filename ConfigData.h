@@ -3,6 +3,7 @@
 #define _CONFIGDATA_h
 
 #define DEBUG_ENABLED
+#define DEBUG_SERIAL
 #define WIFI_MANAGER
 
 #ifndef WIFI_MANAGER
