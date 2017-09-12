@@ -18,8 +18,8 @@ class AverageCalculator
      unsigned long lastMillis;
  public:
     float_t feed (float value);
-    float getAverage () { return average; }
     float_t reset ();
+    float getAverage () { return average; }
 };
 
 #endif
