@@ -381,8 +381,11 @@ void setup () {
     MyWiFiManager wifiManager;              ///< WiFi Manager. Configura los datos WiFi y otras configuraciones
 
     Serial.begin (115200);
-    // Control del ventilador
+    // Control del ventilador y pequeño "aceleron"
+    analogWrite (FAN_PWM_PIN, 900); // D1 = GPIO5. Pin PWM para controlar el ventilador
+    delay(500);
     analogWrite (FAN_PWM_PIN, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
+   
     button.attachClick (button_click);
     button.setPressTicks (t_longPress);
     button.attachPress (long_click);
