@@ -1,3 +1,9 @@
+/*! Fridge efficiency monitoring system
+
+IoT Fridge saver's aims is to monitor fridge and freezer temperatures and power consumption.
+Besides it monitors ambient and radiator temperature to check efficiency.
+*/
+
 #include "ConfigData.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
