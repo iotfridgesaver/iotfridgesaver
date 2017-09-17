@@ -37,7 +37,7 @@ void MyWiFiManager::init() {
         volt = "230";
     }*/
     
-    _emonCMSserverAddressCParam = new WiFiManagerParameter ("server", "EmonCMS server", "emoncms.iotfridgesaver.com", MAX_STRING_LENGTH);
+    _emonCMSserverAddressCParam = new WiFiManagerParameter ("server", "EmonCMS server", "cloud.iotfridgesaver.com", MAX_STRING_LENGTH);
     _emonCMSserverPathCParam = new WiFiManagerParameter ("path", "EmonCMS server path", "/", MAX_STRING_LENGTH);
     _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
     _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
