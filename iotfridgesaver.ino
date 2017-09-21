@@ -473,9 +473,9 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
 #endif
     
     if (!strcmp(topic, "emon/ccost/1")) {
-        watts = strtod (powerStr.c_str(), NULL);
+        fridgeWatts = strtod (powerStr.c_str(), NULL);
 #ifdef DEBUG_ENABLED
-        debugPrintf (Debug.INFO, "Valor traducido %f\n", watts);
+        debugPrintf (Debug.INFO, "Valor traducido %f\n", fridgeWatts);
 #endif
 
     }
@@ -776,18 +776,18 @@ void loop () {
             mqttClient.publish ("iotfridgesaver/tempAmbient_ave", String (aveTemperatures[tempAmbient_idx]).c_str (), true);
             mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/watts", String (watts).c_str ());
+            mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
 #endif
             sendAverage = false;
         } else {
-            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed);
+            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
 #ifdef MQTT
             mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str());
             mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/watts", String (watts).c_str ());
+            mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
 #endif
         }
