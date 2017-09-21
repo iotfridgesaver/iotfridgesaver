@@ -477,8 +477,14 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
 #ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Valor traducido %f\n", fridgeWatts);
 #endif
-
     }
+    else if (!strcmp (topic, "emon/ccost/0")) {
+        houseWatts = strtod (powerStr.c_str (), NULL);
+#ifdef DEBUG_ENABLED
+        debugPrintf (Debug.INFO, "Valor traducido %f\n", houseWatts);
+#endif
+    }
+
 }
 #endif
 
