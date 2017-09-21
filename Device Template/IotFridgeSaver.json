@@ -5,6 +5,10 @@
             "name": "tempRadiator",
             "description": "Temperatura del radiador externo",
             "processList": [
+			{
+				"process": "if_lt_skip",
+				"arguments": {"type": "ProcessArg::VALUE", "value": "-100" }
+			},
             {
                 "process": "log_to_feed",
                 "arguments": {"type": "ProcessArg::FEEDID", "value": "tempRadiator" }
@@ -15,6 +19,10 @@
             "name": "tempAmbient",
             "description": "Temperatura ambiente junto al frigorífico",
             "processList": [
+			{
+				"process": "if_lt_skip",
+				"arguments": {"type": "ProcessArg::VALUE", "value": "-100" }
+			},
             {
                 "process": "log_to_feed",
                 "arguments": {"type": "ProcessArg::FEEDID", "value": "tempAmbient" }
@@ -25,6 +33,10 @@
             "name": "tempFridge",
             "description": "Temperatura en el frigorífico",
             "processList": [
+			{
+				"process": "if_lt_skip",
+				"arguments": {"type": "ProcessArg::VALUE", "value": "-100" }
+			},
             {
                 "process": "log_to_feed",
                 "arguments": {"type": "ProcessArg::FEEDID", "value": "tempFridge" }
@@ -35,6 +47,10 @@
             "name": "tempFreezer",
             "description": "Temperatura en el congelador",
             "processList": [
+			{
+				"process": "if_lt_skip",
+				"arguments": {"type": "ProcessArg::VALUE", "value": "-100" }
+			},
             {
                 "process": "log_to_feed",
                 "arguments": {"type": "ProcessArg::FEEDID", "value": "tempFreezer" }
@@ -56,6 +72,24 @@
 				{
                     "process": "power_to_kwhd",
                     "arguments": {"type": "ProcessArg::FEEDID", "value": "watts_kWh_d" }
+                }
+            ]
+        },
+		{
+            "name": "house_watts",
+            "description": "Consumo total de la vivienda",
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "house_watts" }
+                },
+                {
+                    "process": "power_to_kwh",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "house_watts_kWh" }
+                },
+				{
+                    "process": "power_to_kwhd",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "house_watts_kWh_d" }
                 }
             ]
         },
@@ -110,6 +144,24 @@
         },
         {
             "name": "watts_kWh_d",
+            "type": "DataType::DAILY",
+            "engine": "Engine::PHPTIMESERIES",
+            "interval": "60"
+        },
+		{
+            "name": "house_watts",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "house_watts_kWh",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPFINA",
+            "interval": "60"
+        },
+        {
+            "name": "house_watts_kWh_d",
             "type": "DataType::DAILY",
             "engine": "Engine::PHPTIMESERIES",
             "interval": "60"
