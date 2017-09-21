@@ -1,7 +1,18 @@
-/*! Fridge efficiency monitoring system
-
-IoT Fridge saver's aims is to monitor fridge and freezer temperatures and power consumption.
-Besides it monitors ambient and radiator temperature to check efficiency.
+/**
+* @file iotfridgesaver.ino
+* @Version v0.3
+* \~English
+* @brief Fridge efficiency monitoring system
+*
+* IoT Fridge saver's aims is to monitor fridge and freezer temperatures and power consumption.
+* Besides it monitors ambient and radiator temperature to check efficiency.
+*
+* \~Spanish
+* @brief Sistema de monitorización de eficiencia energética para frigoríficos
+*
+* Iot Fridge Saver es un sistema que monitoriza la temperatura de congeladores y frigoríficos junto
+* con su consumo de electricidad.
+* Además mide también la temperatura ambiente y la del radiador para comprobar la eficiencia.
 */
 
 #include "ConfigData.h"
@@ -24,16 +35,16 @@ Besides it monitors ambient and radiator temperature to check efficiency.
 #include <math.h>
 #include <Arduino.h>
 
-//#define TEST
+//#define TEST                          ///< Enables test mode to use simulated data without using real sensors
 
-#define EMONLIB
+#define EMONLIB                         ///< If enabled it uses Emonlib library to measure power using a clamp sensor
 #ifdef EMONLIB
-#include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
+#include <EmonLib.h>                    ///< https://github.com/openenergymonitor/EmonLib
 EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
 #endif
 
 bool OTAupdating;                       ///< Verdadero si se está haciendo una actualización OTA
-RemoteDebug Debug;
+RemoteDebug Debug;                      ///< Remote debug telnet server instance
 
 #define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
@@ -56,11 +67,11 @@ int fanSpeed = 0;                       ///< Velocidad del ventilador
 bool shouldSaveConfig = false;          ///< Verdadero si WiFi Manager activa una configuración nueva
 bool configLoaded = false;
 
-String emonCMSserverAddress = "";  ///< Dirección del servidor EmonCMS
-String emonCMSserverPath = "";
-String emonCMSwriteApiKey = ""; ///< API key del usuario
-int mainsVoltage = 230;       ///< Tensión de alimentación
-const char *configFileName = "config.json";
+String emonCMSserverAddress = "";       ///< Dirección del servidor Web que aloja a EmonCMS
+String emonCMSserverPath = "";          ///< Ruta del servicio EmonCMS en el servidor Web
+String emonCMSwriteApiKey = "";         ///< API key del usuario
+int mainsVoltage = 230;                 ///< Tensión de alimentación
+const char *configFileName = "config.json"; ///< Nombre del archivo de configuración que se genera en la flash
 
 void debugPrintf (uint8_t debugLevel, const char* format, ...) {
     if (Debug.isActive (debugLevel)) {
