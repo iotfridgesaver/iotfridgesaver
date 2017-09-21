@@ -31,7 +31,8 @@ RemoteDebug Debug;
 #define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
 float aveTemperatures[NUMBER_OF_SENSORS];
-double watts;                           ///< Potencia instantánea consumida por el conjunto
+double fridgeWatts;                     ///< Potencia instantánea consumida por el conjunto
+double houseWatts;                      ///< Potencia instantánea total consumida. Usualmente potencia de la acometida principal de la casa
 uint8_t tempAmbient_idx;                ///< Índice del sensor que mide la temperatura ambiente
 uint8_t tempRadiator_idx;               ///< Índice del sensor que mide la temperatura del radiador del frigorífico
 uint8_t tempFridge_idx;                 ///< Índice del sensor que mide la temperatura del frigorífico
@@ -637,6 +638,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         float tempFridge, 
                         float tempFreezer, 
                         double watts,
+                        double totalWatts,
                         int fanOn,
                         float aveTempAmbient = -100) {
 
@@ -669,6 +671,8 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "\"tempFreezer\":" + String (tempStr) + ",";
     dtostrf (watts, 3, 3, tempStr);
     httpRequest += "\"watts\":" + String (tempStr) + ",";
+    dtostrf (totalWatts, 3, 3, tempStr);
+    httpRequest += "\"house_watts\":" + String (tempStr) + ",";
     httpRequest += "\"fan\":" + String(fanOn);
     httpRequest += "}&apikey=" + emonCMSwriteApiKey + " HTTP/1.1\r\n";
     httpRequest += "Host: " + emonCMSserverAddress + "\r\n\r\n";
@@ -741,7 +745,8 @@ void loop () {
         temperatures[tempFridge_idx] = sensors.getTempCByIndex (tempFridge_idx);
         temperatures[tempFreezer_idx] = sensors.getTempCByIndex (tempFreezer_idx);
 #ifdef EMONLIB
-        watts = getPower ();
+        fridgeWatts = getPower ();
+        //houseWatts = getPower (0);
 #endif //EMONLIB
 #else
         temperatures[tempRadiator_idx] = random (3500, 4000)/(float)100;
@@ -759,11 +764,12 @@ void loop () {
         debugPrintf (Debug.INFO, "Temperatura ambiente: %f\n", temperatures[tempAmbient_idx]);
         debugPrintf (Debug.INFO, "Temperatura frigorifico: %f\n", temperatures[tempFridge_idx]);
         debugPrintf (Debug.INFO, "Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
-        debugPrintf (Debug.INFO, "Consumo: %f\n", watts);
+        debugPrintf (Debug.INFO, "Consumo frigorífico: %f\n", fridgeWatts);
+        debugPrintf (Debug.INFO, "Consumo total: %f\n", houseWatts);
 #endif // DEBUG_ENABLED
         
         if (sendAverage) {
-            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], watts, fanSpeed, aveTemperatures[tempAmbient_idx]);
+            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed, aveTemperatures[tempAmbient_idx]);
 #ifdef MQTT
             mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
