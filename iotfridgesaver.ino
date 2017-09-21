@@ -31,7 +31,8 @@ RemoteDebug Debug;
 
 #define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
-double fridgeWatts;                           ///< Potencia instantánea consumida por el conjunto
+double fridgeWatts;                     ///< Potencia instantánea consumida por el conjunto
+double houseWatts;                      ///< Potencia instantánea total consumida. Usualmente potencia de la acometida principal de la casa
 uint8_t tempAmbient_idx;                ///< Índice del sensor que mide la temperatura ambiente
 uint8_t tempRadiator_idx;               ///< Índice del sensor que mide la temperatura del radiador del frigorífico
 uint8_t tempFridge_idx;                 ///< Índice del sensor que mide la temperatura del frigorífico
@@ -501,6 +502,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         float tempFridge, 
                         float tempFreezer, 
                         double watts,
+                        double totalWatts,
                         int fanOn) {
 
     WiFiClientSecure client; ///< Cliente TCP con SSL
@@ -528,6 +530,8 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "\"tempFreezer\":" + String (tempStr) + ",";
     dtostrf (watts, 3, 3, tempStr);
     httpRequest += "\"watts\":" + String (tempStr) + ",";
+    dtostrf (totalWatts, 3, 3, tempStr);
+    httpRequest += "\"house_watts\":" + String (tempStr) + ",";
     httpRequest += "\"fan\":" + String(fanOn);
     httpRequest += "}&apikey=" + emonCMSwriteApiKey + " HTTP/1.1\r\n";
     httpRequest += "Host: " + emonCMSserverAddress + "\r\n\r\n";
@@ -588,6 +592,7 @@ void loop () {
         temperatures[tempFreezer_idx] = sensors.getTempCByIndex (tempFreezer_idx);
 
         fridgeWatts = getPower ();
+        //houseWatts = getPower (0);
 #else
         temperatures[tempRadiator_idx] = random (35, 40);
         temperatures[tempAmbient_idx] = random (25, 30);
@@ -601,10 +606,11 @@ void loop () {
         debugPrintf (Debug.INFO, "Temperatura ambiente: %f\n", temperatures[tempAmbient_idx]);
         debugPrintf (Debug.INFO, "Temperatura frigorifico: %f\n", temperatures[tempFridge_idx]);
         debugPrintf (Debug.INFO, "Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
-        debugPrintf (Debug.INFO, "Consumo: %f\n", fridgeWatts);
+        debugPrintf (Debug.INFO, "Consumo frigorífico: %f\n", fridgeWatts);
+        debugPrintf (Debug.INFO, "Consumo total: %f\n", houseWatts);
 #endif // DEBUG_ENABLED
 
-        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, fanSpeed);
+        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
 
     }
 
