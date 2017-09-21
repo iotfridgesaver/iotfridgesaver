@@ -45,7 +45,9 @@ void MyWiFiManager::init() {
 #ifdef MQTT
     _MQTTserverCParam = new WiFiManagerParameter ("mqtt_server", "MQTT server", "", MAX_STRING_LENGTH);
     _MQTTportCParam = new WiFiManagerParameter ("mqtt_port", "MQTT server port", "1883", MAX_STRING_LENGTH);
-    _MQTTtopicCParam = new WiFiManagerParameter ("mqtt_topic", "MQTT topic", "", MAX_STRING_LENGTH);
+    _MQTTfridgeTopicCParam = new WiFiManagerParameter ("mqtt_fridge_topic", "MQTT topic", "", MAX_STRING_LENGTH);
+    _MQTTtotalTopicCParam = new WiFiManagerParameter ("mqtt_total_topic", "MQTT topic", "", MAX_STRING_LENGTH);
+
 #endif
 
     setConnectTimeout(30);
@@ -58,7 +60,8 @@ void MyWiFiManager::init() {
 #ifdef MQTT
     addParameter (_MQTTserverCParam);
     addParameter (_MQTTportCParam);
-    addParameter (_MQTTtopicCParam);
+    addParameter (_MQTTfridgeTopicCParam);
+    addParameter (_MQTTtotalTopicCParam);
 #endif
 
     if (!autoConnect()) {
@@ -80,8 +83,13 @@ int16_t MyWiFiManager::getMQTTport () {
     return atoi (charStr);
 }
 
-String MyWiFiManager::getMQTTtopic () {
-    const char * charStr = _MQTTtopicCParam->getValue ();
+String MyWiFiManager::getFridgeMQTTtopic () {
+    const char * charStr = _MQTTfridgeTopicCParam->getValue ();
+    return String (charStr);
+}
+
+String MyWiFiManager::getTotalMQTTtopic () {
+    const char * charStr = _MQTTtotalTopicCParam->getValue ();
     return String (charStr);
 }
 #endif

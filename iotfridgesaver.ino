@@ -110,6 +110,7 @@ void reconnect () {
             // ... and resubscribe
             //mqttClient.subscribe("inTopic");
             mqttClient.subscribe (mqttFridgePowerTopic.c_str ());
+            mqttClient.subscribe (mqttTotalPowerTopic.c_str ());
         } else {
             debugPrintf (Debug.INFO, "failed, rc=%d try again in 5 seconds\n", mqttClient.state ());
             // Wait 5 seconds before retrying
@@ -250,7 +251,8 @@ void getCustomData (MyWiFiManager &wifiManager) {
 #ifdef MQTT
     mqttServerName = wifiManager.getMQTTserver();
     mqttServerPort = wifiManager.getMQTTport ();
-    mqttFridgePowerTopic = wifiManager.getMQTTtopic ();
+    mqttFridgePowerTopic = wifiManager.getFridgeMQTTtopic ();
+    mqttTotalPowerTopic = wifiManager.getFridgeMQTTtopic ();
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -262,7 +264,8 @@ void getCustomData (MyWiFiManager &wifiManager) {
 #ifdef MQTT
     debugPrintf (Debug.INFO, "Servidor MQTT: %s\n", mqttServerName.c_str());
     debugPrintf (Debug.INFO, "Puerto MQTT: %d\n", mqttServerPort);
-    debugPrintf (Debug.INFO, "Topic MQTT: %s\n", mqttFridgePowerTopic.c_str());
+    debugPrintf (Debug.INFO, "Topic MQTT frigorífico: %s\n", mqttFridgePowerTopic.c_str());
+    debugPrintf (Debug.INFO, "Topic MQTT total: %s\n", mqttTotalPowerTopic.c_str ());
 #endif
 #endif // DEBUG_ENABLED
 
@@ -325,7 +328,8 @@ void loadConfigData () {
 #ifdef MQTT
                     mqttServerName = json.get<String> ("mqttServerName");
                     mqttServerPort = json.get<int> ("mqttServerPort");
-                    mqttFridgePowerTopic = json.get<String> ("mqttPowerTopic");
+                    mqttFridgePowerTopic = json.get<String> ("mqttFridgePowerTopic");
+                    mqttTotalPowerTopic = json.get<String> ("mqttTotalPowerTopic");
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -337,7 +341,8 @@ void loadConfigData () {
 #ifdef MQTT
                     debugPrintf (Debug.INFO, "mqttServerName: %s\n", mqttServerName.c_str ());
                     debugPrintf (Debug.INFO, "mqttServerPort: %d\n", mqttServerPort);
-                    debugPrintf (Debug.INFO, "mqttPowerTopic: %s\n", mqttFridgePowerTopic.c_str ());
+                    debugPrintf (Debug.INFO, "mqttFridgePowerTopic: %s\n", mqttFridgePowerTopic.c_str ());
+                    debugPrintf (Debug.INFO, "mqttTotalPowerTopic: %s\n", mqttTotalPowerTopic.c_str ());
 #endif
 
 #endif // DEBUG_ENABLED
@@ -392,7 +397,8 @@ void saveConfigData () {
 #ifdef MQTT
         json["mqttServerName"] = mqttServerName;
         json["mqttServerPort"] = mqttServerPort;
-        json["mqttPowerTopic"] = mqttFridgePowerTopic;
+        json["mqttFridgePowerTopic"] = mqttFridgePowerTopic;
+        json["mqttTotalPowerTopic"] = mqttTotalPowerTopic;
 #endif
 
         File configFile = SPIFFS.open (configFileName, "w");
@@ -472,13 +478,13 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
     debugPrintf (Debug.INFO, "Message arrived [%s]: %s\n", topic, powerStr.c_str());
 #endif
     
-    if (!strcmp(topic, "emon/ccost/1")) {
+    if (!strcmp(topic, mqttFridgePowerTopic.c_str())) {
         fridgeWatts = strtod (powerStr.c_str(), NULL);
 #ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Valor traducido %f\n", fridgeWatts);
 #endif
     }
-    else if (!strcmp (topic, "emon/ccost/0")) {
+    else if (!strcmp (topic, mqttTotalPowerTopic.c_str ())) {
         houseWatts = strtod (powerStr.c_str (), NULL);
 #ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Valor traducido %f\n", houseWatts);
@@ -518,7 +524,7 @@ void setup () {
     // Si no se han configurado los datos del servidor borrar la configuración
     if (emonCMSserverAddress == "" || emonCMSserverPath == "" || emonCMSwriteApiKey == ""
 #ifdef MQTT
-        || mqttServerName == "" || mqttFridgePowerTopic == ""
+        || mqttServerName == "" || mqttFridgePowerTopic == "" || mqttTotalPowerTopic == ""
 #endif
         ) {
         wifiManager.resetSettings ();
@@ -560,8 +566,8 @@ void setup () {
 #ifdef MQTT
     debugPrintf (Debug.INFO, "mqttServerName: %s\n", mqttServerName.c_str());
     debugPrintf (Debug.INFO, "mqttServerPort: %d\n", mqttServerPort);
-    debugPrintf (Debug.INFO, "mqttPowerTopic: %s\n", mqttFridgePowerTopic.c_str());
-
+    debugPrintf (Debug.INFO, "mqttFridgePowerTopic: %s\n", mqttFridgePowerTopic.c_str());
+    debugPrintf (Debug.INFO, "mqttTotalPowerTopic: %s\n", mqttTotalPowerTopic.c_str ());
 #endif
 #endif // DEBUG_ENABLED
 
@@ -783,6 +789,7 @@ void loop () {
             mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
+            mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
 #endif
             sendAverage = false;
@@ -794,6 +801,7 @@ void loop () {
             mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
+            mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
 #endif
         }

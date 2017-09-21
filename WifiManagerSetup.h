@@ -22,7 +22,8 @@ protected:
     WiFiManagerParameter * _mainsVoltageCParam;
 #ifdef MQTT
     WiFiManagerParameter * _MQTTserverCParam;
-    WiFiManagerParameter * _MQTTtopicCParam;
+    WiFiManagerParameter * _MQTTfridgeTopicCParam;
+    WiFiManagerParameter * _MQTTtotalTopicCParam;
     WiFiManagerParameter * _MQTTportCParam;
 #endif
 
@@ -38,7 +39,8 @@ public:
 #ifdef MQTT
     String getMQTTserver ();
     int16_t getMQTTport ();
-    String getMQTTtopic ();
+    String getFridgeMQTTtopic ();
+    String getTotalMQTTtopic ();
 #endif
     int getMainsVoltage ();
 };
