@@ -1,7 +1,11 @@
-// 
-// 
-// 
-
+/**
+* @file WifiManagerSetup.cpp
+* \~English
+* @brief WiFiManager class method definition.
+*
+* \~Spanish
+* @brief Definición de métodos para la clase WiFiManager.
+*/
 #include "WifiManagerSetup.h"
 extern const char *configFileName;
 
@@ -9,10 +13,10 @@ extern const char *configFileName;
 //extern String emonCMSwriteApiKey; 
 //extern int mainsVoltage;
 
-#define MAX_STRING_LENGTH 40
+#define MAX_STRING_LENGTH 40  ///< Longitud máxima de los parámetros de usuario
 extern bool configLoaded;
 
-void MyWiFiManager::init() {
+void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los parámetros específicos del proyecto
     //resetSettings();
 
 /*#ifdef DEBUG_ENABLED

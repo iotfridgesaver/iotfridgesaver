@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>IoTFridgeSaver: Fichero Fuente ConfigData.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">IoTFridgeSaver
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generado por Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Buscar');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Buscar');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="headertitle">
+<div class="title">ConfigData.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="_config_data_8h.html">Ir a la documentación de este archivo.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;</div><div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#pragma once</span></div><div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#ifndef _CONFIGDATA_h</span></div><div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="_config_data_8h.html#ad7b18a8c35a45b65998f9cda1941712f">   11</a></span>&#160;<span class="preprocessor">#define _CONFIGDATA_h</span></div><div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div><div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="_config_data_8h.html#a7d2ae674cad5299a52b0e7dceac10087">   13</a></span>&#160;<span class="preprocessor">#define DEBUG_ENABLED   </span></div><div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="_config_data_8h.html#a61e127df60d55ea4c8bd6b8ec1f88367">   14</a></span>&#160;<span class="preprocessor">#define DEBUG_SERIAL    </span></div><div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="_config_data_8h.html#ae860709a7c7d5f5ea94354378ecccdce">   15</a></span>&#160;<span class="preprocessor">#define WIFI_MANAGER    </span></div><div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor"></span></div><div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#ifndef WIFI_MANAGER</span></div><div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span>* WIFI_SSID = <span class="stringliteral">&quot;NOMBRE_DE_MI_RED&quot;</span>; </div><div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span>* WIFI_PASS = <span class="stringliteral">&quot;CONTRASEÑA&quot;</span>;       </div><div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#endif // WIFI_MANAGER</span></div><div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;</div><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div><div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="_config_data_8h.html#a539d62e1d57d7c7374a2aa5e37ec73f0">   23</a></span>&#160;<span class="preprocessor">#define FAN_ENABLE_BUTTON   D3      </span></div><div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="_config_data_8h.html#a2166de7a6d9d6a4bc0338cbd69df123a">   24</a></span>&#160;<span class="preprocessor">#define FAN_PWM_PIN         D1      </span></div><div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="_config_data_8h.html#a2c201ed897fec039072e9fdf68f47f11">   25</a></span>&#160;<span class="preprocessor">#define MEASURE_PERIOD      60000   </span></div><div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor"></span></div><div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="_config_data_8h.html#a9e8faadebab2928ab1d715c78524fa40">   27</a></span>&#160;<span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="_config_data_8h.html#a9e8faadebab2928ab1d715c78524fa40">t_longPress</a> =     10000;   </div><div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div><div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="_config_data_8h.html#a7fd4fabe1d08099c22fc5506ddfb6451">   29</a></span>&#160;<span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="_config_data_8h.html#a7fd4fabe1d08099c22fc5506ddfb6451">fanThreshold</a> =    60;     </div><div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div><div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div><div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div><div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#endif</span></div><div class="ttc" id="_config_data_8h_html_a7fd4fabe1d08099c22fc5506ddfb6451"><div class="ttname"><a href="_config_data_8h.html#a7fd4fabe1d08099c22fc5506ddfb6451">fanThreshold</a></div><div class="ttdeci">const int fanThreshold</div><div class="ttdoc">Valor en vatios por encima del cual se enciende el ventilador. </div><div class="ttdef"><b>Definition:</b> ConfigData.h:29</div></div>
+<div class="ttc" id="_config_data_8h_html_a9e8faadebab2928ab1d715c78524fa40"><div class="ttname"><a href="_config_data_8h.html#a9e8faadebab2928ab1d715c78524fa40">t_longPress</a></div><div class="ttdeci">const int t_longPress</div><div class="ttdoc">Tiempo en milisegundos para identificar pulsación larga. </div><div class="ttdef"><b>Definition:</b> ConfigData.h:27</div></div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Generado por &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.13
+</small></address>
+</body>
+</html>
