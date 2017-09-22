@@ -51,10 +51,10 @@ public:
     String getEmonCMSserverPath ();     ///< Obtiene la ruta del servidor de EmonCMS
     String getEmonCMSwriteApiKey ();    ///< Obtiene la clave API del usuario
 #ifdef MQTT
-    String getMQTTserver ();
-    int16_t getMQTTport ();
-    String getFridgeMQTTtopic ();
-    String getTotalMQTTtopic ();
+    String getMQTTserver ();            ///< Obtiene la dirección del servidor MQTT
+    int16_t getMQTTport ();             ///< Obtiene el puerto del servidor MQTT
+    String getFridgeMQTTtopic ();       ///< Obtiene el topic del consumo del frigorífico
+    String getTotalMQTTtopic ();        ///< Obtiene el topic del consumo total de la vivienda
 #endif
     int getMainsVoltage ();             ///< Obtiene la tensión configurada por el usuario
 };

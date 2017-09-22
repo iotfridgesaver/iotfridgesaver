@@ -77,11 +77,11 @@ String emonCMSserverPath = "";          ///<\~Spanish Ruta del servicio EmonCMS 
 String emonCMSwriteApiKey = "";         ///<\~Spanish API key del usuario
 int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
 #ifdef MQTT
-String mqttServerName = "";
-uint16_t mqttServerPort = 1883;
-String mqttFridgePowerTopic = "";
-String mqttTotalPowerTopic = "";
-bool mqttStarted = false;
+String mqttServerName = "";             ///<\~Spanish Nombre del servidor MQTT
+uint16_t mqttServerPort = 1883;         ///<\~Spanish Puerto del ervidor MQTT
+String mqttFridgePowerTopic = "";       ///<\~Spanish Topic del consumo del frigorífico
+String mqttTotalPowerTopic = "";        ///<\~Spanish Topic del consumo total de la vivienda
+bool mqttStarted = false;               ///<\~Spanish Tensión de alimentación
 #endif
 const char *configFileName = "config.json"; ///<\~Spanish Nombre del archivo de configuración que se genera en la flash
 
@@ -125,6 +125,11 @@ void debugPrintf (uint8_t debugLevel, const char* format, ...) {
 }
 
 #ifdef MQTT
+/**
+@brief Conecta al servidor MQTT al iniciar el programa y en caso de desconexión.
+
+También se subscribe a los topics de consumo del frigorífico y de la vivienda
+*/
 void reconnect () {
     // Loop until we're reconnected
     while (!mqttClient.connected ()) {
@@ -538,6 +543,13 @@ void processSyncEvent (NTPSyncEvent_t ntpEvent) {
 }
 
 #ifdef MQTT
+/**
+@brief Decodifica los valores de consumo recibidos por MQTT.
+
+@param[in] topic Topic del mensaje recibido
+@param[in] payload Cadena de texto con el contenido del mensaje
+@param[in] length Longitud del contenido
+*/
 void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
     String powerStr = "";
     //String topicStr = String (topic);
