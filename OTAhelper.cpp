@@ -1,15 +1,23 @@
-// 
-// 
-// 
+/**
+* @file OTAhelper.cpp
+* \~English
+* @brief Helper function to setup OTA update via Arduino IDE
+*
+* \~Spanish
+* @brief Función auxiliar para configurar la actualización OTA con IDE Arduino
+*/
 
 #include "OTAhelper.h"
 
-#include <ArduinoOTA.h>
+#include <ArduinoOTA.h> // Librería oficial Arduino OTA
 //#define OTA_DEBUG
 
 //extern RemoteDebug Debug;
-extern bool OTAupdating;
+extern bool OTAupdating;    ///< Indica si el proceso de actualización está activo, para deshabilitar el resto de procesos.
 
+/**
+@brief Inicia el servidor OTA, con todo lo necesario.
+*/
 void OTASetup() {
     ArduinoOTA.onStart([]() {
 		OTAupdating = true;
@@ -37,7 +45,7 @@ void OTASetup() {
     });
 #endif // OTA_DEBUG
 	ArduinoOTA.onError([](ota_error_t error) {
-		OTAupdating = false;
+		OTAupdating = false; // La actualización ha fallado, pasar a estado normal
 
 #ifdef OTA_DEBUG
 		Serial.printf("\nError[%u]: ", error);

@@ -1,6 +1,5 @@
 /**
 * @file iotfridgesaver.ino
-* @Version v0.3
 * \~English
 * @brief Fridge efficiency monitoring system
 *
@@ -13,6 +12,10 @@
 * Iot Fridge Saver es un sistema que monitoriza la temperatura de congeladores y frigoríficos junto
 * con su consumo de electricidad.
 * Además mide también la temperatura ambiente y la del radiador para comprobar la eficiencia.
+*
+* @mainpage Sistema de monitorización de eficiencia energética para frigoríficos
+*
+* @section intro Introducción
 */
 
 #include "ConfigData.h"
@@ -35,46 +38,53 @@
 #include <math.h>
 #include <Arduino.h>
 
-//#define TEST                          ///< Enables test mode to use simulated data without using real sensors
+//#define TEST                          ///<\~English Enables test mode to use simulated data without using real sensors \~Spanish Habilita el modo test para usar datos simulados si no tengo sensores
 
-#define EMONLIB                         ///< If enabled it uses Emonlib library to measure power using a clamp sensor
+#define EMONLIB                         ///<\~English If enabled it uses Emonlib library to measure power using a clamp sensor \~Spanish Debe estar activado si se usa una pinza CT030 con EmonLib
 #ifdef EMONLIB
-#include <EmonLib.h>                    ///< https://github.com/openenergymonitor/EmonLib
-EnergyMonitor emon1;                    ///< Instancia del monitor de consumo
+#include <EmonLib.h>                    // https://github.com/openenergymonitor/EmonLib
+EnergyMonitor emon1;                    ///<\~Spanish Instancia del monitor de consumo
 #endif
 
-bool OTAupdating;                       ///< Verdadero si se está haciendo una actualización OTA
-RemoteDebug Debug;                      ///< Remote debug telnet server instance
+bool OTAupdating;                       ///<\~Spanish Verdadero si se está haciendo una actualización OTA
+RemoteDebug Debug;                      ///<\~Spanish Remote debug telnet server instance
 
-#define NUMBER_OF_SENSORS 4             ///< Número de sensores esperados 
-float temperatures[NUMBER_OF_SENSORS];  ///< Espacio para almacenar los valores de temperatura
-double fridgeWatts;                     ///< Potencia instantánea consumida por el conjunto
-double houseWatts;                      ///< Potencia instantánea total consumida. Usualmente potencia de la acometida principal de la casa
-uint8_t tempAmbient_idx;                ///< Índice del sensor que mide la temperatura ambiente
-uint8_t tempRadiator_idx;               ///< Índice del sensor que mide la temperatura del radiador del frigorífico
-uint8_t tempFridge_idx;                 ///< Índice del sensor que mide la temperatura del frigorífico
-uint8_t tempFreezer_idx;                ///< Índice del sensor que mide la temperatura del congelador
-uint8_t numberOfDevices = 0;            ///< Número de sensores detectados. Debería ser igual a NUMBER_OF_SENSORS
+#define NUMBER_OF_SENSORS 4             ///<\~English Number of expected temp sensors \~Spanish Número de sensores esperados 
+float temperatures[NUMBER_OF_SENSORS];  ///<\~Spanish Espacio para almacenar los valores de temperatura
+double fridgeWatts;                     ///<\~Spanish Potencia instantánea consumida por el conjunto
+double houseWatts;                      ///<\~Spanish Potencia instantánea total consumida. Usualmente potencia de la acometida principal de la casa
+uint8_t tempAmbient_idx;                ///<\~Spanish Índice del sensor que mide la temperatura ambiente
+uint8_t tempRadiator_idx;               ///<\~Spanish Índice del sensor que mide la temperatura del radiador del frigorífico
+uint8_t tempFridge_idx;                 ///<\~Spanish Índice del sensor que mide la temperatura del frigorífico
+uint8_t tempFreezer_idx;                ///<\~Spanish Índice del sensor que mide la temperatura del congelador
+uint8_t numberOfDevices = 0;            ///<\~Spanish Número de sensores detectados. Debería ser igual a NUMBER_OF_SENSORS
 
-#define ONE_WIRE_BUS D5                 ///< Pin de datos para los sensores de temperatura. D5 = GPIO16
-#define TEMPERATURE_PRECISION 11        ///< Número de bits con los que se calcula la temperatura
-OneWire oneWire (ONE_WIRE_BUS);         ///< Instancia OneWire para comunicar con los sensores de temperatura
-DallasTemperature sensors (&oneWire);   ///< Pasar el bus de datos como referencia
-const int minTemperature = -100;        ///< Temperatura mínima válida
+#define ONE_WIRE_BUS D5                 ///<\~Spanish Pin de datos para los sensores de temperatura. D5 = GPIO16
+#define TEMPERATURE_PRECISION 11        ///<\~Spanish Número de bits con los que se calcula la temperatura
+OneWire oneWire (ONE_WIRE_BUS);         ///<\~Spanish Instancia OneWire para comunicar con los sensores de temperatura
+DallasTemperature sensors (&oneWire);   ///<\~Spanish Pasar el bus de datos como referencia
+const int minTemperature = -100;        ///<\~Spanish Temperatura mínima válida
 
-OneButton button (FAN_ENABLE_BUTTON, true);
-bool fanEnabled = true;                 ///< Verdadero si el ventilador está activado
-int fanSpeed = 0;                       ///< Velocidad del ventilador
+OneButton button (FAN_ENABLE_BUTTON, true); ///<\~Spanish Objeto que controla el botón. True significa activo a nivel bajo
+bool fanEnabled = true;                 ///<\~Spanish Verdadero si el ventilador está activado
+int fanSpeed = 0;                       ///<\~Spanish Velocidad del ventilador
 
-bool shouldSaveConfig = false;          ///< Verdadero si WiFi Manager activa una configuración nueva
-bool configLoaded = false;
+bool shouldSaveConfig = false;          ///<\~Spanish Verdadero si WiFi Manager activa una configuración nueva
+bool configLoaded = false;              ///<\~Spanish Indica si se ha cargado la configuración de la flash. Sin uso actualmente
 
-String emonCMSserverAddress = "";       ///< Dirección del servidor Web que aloja a EmonCMS
-String emonCMSserverPath = "";          ///< Ruta del servicio EmonCMS en el servidor Web
-String emonCMSwriteApiKey = "";         ///< API key del usuario
-int mainsVoltage = 230;                 ///< Tensión de alimentación
-const char *configFileName = "config.json"; ///< Nombre del archivo de configuración que se genera en la flash
+String emonCMSserverAddress = "";       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
+String emonCMSserverPath = "";          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
+String emonCMSwriteApiKey = "";         ///<\~Spanish API key del usuario
+int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
+const char *configFileName = "config.json"; ///<\~Spanish Nombre del archivo de configuración que se genera en la flash
 
+/**
+@brief Envuelve la función Debug.printf para ayudar al deshabilitar la salida de debug.
+
+@param[in]     debugLevel Nivel de debug para la librería RemoteDebug.
+@param[in]     format Cadena a imprimir con marcadores de formatos.
+@param[in]     ... Lista de variables.
+*/
 void debugPrintf (uint8_t debugLevel, const char* format, ...) {
     if (Debug.isActive (debugLevel)) {
         va_list argptr;
@@ -101,9 +111,13 @@ void debugPrintf (uint8_t debugLevel, const char* format, ...) {
     }
 }
 
-/********************************************//**
-*  Función para buscar la posición del valor máximo en el array de temperaturas
-***********************************************/
+/**
+@brief Función para buscar la posición del valor máximo en el array de temperaturas.
+
+@param[in]     temperatures Array de valores en formato float.
+@param[in]     size Tamaño del Array.
+@returns       El índice del mayor valor del array
+*/
 int MaxValue (float *temperatures, uint8_t size) {
 
     float max_v = minTemperature;
@@ -120,12 +134,12 @@ int MaxValue (float *temperatures, uint8_t size) {
 }
 
 
-/********************************************//**
-*  Funcion para ordenar los sensores de temperatura
+/**
+@brief Función para ordenar los sensores de temperatura.
 
-*  Ordena, de mayor a menor, los índices de los sensores según la secuencia
-*       Radiador, Ambiente, Frigorífico, Congelador
-***********************************************/
+Ordena, de mayor a menor, los índices de los sensores según la secuencia
+Radiador, Ambiente, Frigorífico, Congelador
+*/
 void sortSensors () {
     //sensors.setWaitForConversion (false);  // makes it async
     int max_i = 0;
@@ -174,12 +188,14 @@ void sortSensors () {
 }
 
 
-/********************************************//**
-*  Función para iniciar los sensores de temperatura
-***********************************************/
+/**
+@brief Inicia los sensores de temperatura.
+
+@returns       Número de sensores se han encontrado
+*/
 uint8_t initTempSensors () {
-    DeviceAddress tempDeviceAddress;    ///< Almacenamiento temporal para las direcciones encontradas
-    uint8_t numberOfDevices;            ///< Número de sensores encontrados
+    DeviceAddress tempDeviceAddress;    // Almacenamiento temporal para las direcciones encontradas
+    uint8_t numberOfDevices;            // Número de sensores encontrados
 
 #ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Init Dallas Temperature Control Library\n");
@@ -216,6 +232,12 @@ uint8_t initTempSensors () {
     return numberOfDevices;
 }
 
+#ifdef WIFI_MANAGER
+/**
+@brief Se ejecuta cuando WiFiManager se ha conectado a la red WiFi ha recuperado la configuración del formulario.
+
+Activa la bandera que controla el inicio el almacenamiento de la configuración personalizada en la memoria flash, en el sistema de archivos SPIFFS
+*/
 void configModeCallback () {
 #ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "%s: Guardar configuración\n", __FUNCTION__);
@@ -223,6 +245,14 @@ void configModeCallback () {
     shouldSaveConfig = true;
 }
 
+/**
+@brief Rellena las variables de consfiguración con los datos que entrega WiFiManager.
+
+Comprueba él formato de los datos numéricos, para evitar errores de ejecución.
+Si hay un error reinicia el dispositivo
+
+@param[in]     wifiManager Referencia al objeto WiFiManager.
+*/
 void getCustomData (MyWiFiManager &wifiManager) {
     //	Obtener datos de WifiManager
     emonCMSserverAddress = wifiManager.getEmonCMSserverAddress ();
@@ -248,6 +278,11 @@ void getCustomData (MyWiFiManager &wifiManager) {
 
 }
 
+/**
+@brief Carga los datos de configuración desde el sistema de archivos SPIFFS, desde la flash.
+
+Inicia el sistema de archivos si éste es incorrecto.
+*/
 void loadConfigData () {
     //clean FS, for testing
     //SPIFFS.format();
@@ -335,6 +370,9 @@ void loadConfigData () {
 
 }
 
+/**
+@brief Guarda los datos de configuración en el sistema de archivos SPIFFS, desde la flash.
+*/
 void saveConfigData () {
 #ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "saving config\n");
@@ -370,12 +408,21 @@ void saveConfigData () {
     //end save
 }
 
+/**
+@brief Inicia el servidor WiFiManager.
+*/
 void startWifiManager (MyWiFiManager &wifiManager) {
 
     wifiManager.setSaveConfigCallback (configModeCallback);
     wifiManager.init ();
 }
+#endif //WIFI_MANAGER
 
+/**
+@brief Se activa al hacer una pulsación corta en el botón.
+
+Conmuta el funcionamiento del ventilador
+*/
 void button_click () {
     fanEnabled = !fanEnabled;
 #ifdef DEBUG_ENABLED
@@ -383,6 +430,13 @@ void button_click () {
 #endif // DEBUG_ENABLED
 }
 
+#ifdef WIFI_MANAGER
+/**
+@brief Se activa al hacer una pulsación larga en el botón.
+
+Reinicia el dispositivo a la configuración de fábrica y lo reinicia para que pida
+de nuevo los datos de configuración al usuario
+*/
 void long_click () {
 #ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "---------------Reset config\n");
@@ -392,12 +446,10 @@ void long_click () {
     delay (1000);
     ESP.reset ();
 }
+#endif // WIFI_MANAGER
 
-/********************************************//**
-*  Setup
-***********************************************/
 void setup () {
-    MyWiFiManager wifiManager;              ///< WiFi Manager. Configura los datos WiFi y otras configuraciones
+    MyWiFiManager wifiManager;              // WiFi Manager. Configura los datos WiFi y otras configuraciones
 
     Serial.begin (115200);
     // Control del ventilador y pequeño "aceleron"
@@ -412,7 +464,7 @@ void setup () {
 #ifdef DEBUG_SERIAL
     Debug.setSerialEnabled (true);
 #else
-    Debug.showColors (true);
+    Debug.showColors (true); // Habilita los colores si la salida no es Serie, ya que no funciona bien.
 #endif // DEBUG_SERIAL
 
 #ifdef WIFI_MANAGER
@@ -485,9 +537,11 @@ void setup () {
     sortSensors (); // Asignar los sensores automáticamente
 }
 
-/********************************************//**
-*  Función para obtener la medida de consumo en Vatios
-***********************************************/
+/**
+@brief Obtiene la medida de consumo en Vatios
+
+@returns Valor de la medida en Vatios, en formato double
+*/
 double getPower () {
     double watts;
 
@@ -511,9 +565,21 @@ double getPower () {
     return watts;
 }
 
-/********************************************//**
-*  Envía los datos a la plataforma de EmonCMS
-***********************************************/
+/**
+@brief  Envía los datos a la plataforma de EmonCMS.
+
+@param[in]  tempRadiator    Temperatura del radiador del frigorífico
+@param[in]  tempAmbient     Temperatura ambiente en el exterior del frigorífico
+@param[in]  tempFridge      Temperatura del interior del frigorífico
+@param[in]  tempFreezer     Temperatura del interior del congelador
+@param[in]  watts           Consumo del frigorífico
+@param[in]  totalWatts      Consumo total de la casa
+@param[in]  fanOn           Velocidad del ventilador
+
+@returns -1 si hay error de conexión.
+@returns -2 si ha pasado el tiempo de espera al enviar los datos o esperar la respuesta
+@returns  0 si el envío ha sido correcto
+*/
 int8_t sendDataEmonCMS (float tempRadiator,
                         float tempAmbient, 
                         float tempFridge, 
@@ -522,10 +588,10 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         double totalWatts,
                         int fanOn) {
 
-    WiFiClientSecure client; ///< Cliente TCP con SSL
-    const unsigned int maxTimeout = 5000; ///< Tiempo maximo de espera a la respuesta del servidor
-    unsigned long timeout; ///< Contador para acumilar el tiempo de espera
-    char tempStr[10]; ///< Cadena temporal para almacenar los numeros como texto
+    WiFiClientSecure client; // Cliente TCP con SSL
+    const unsigned int maxTimeout = 5000; // Tiempo maximo de espera a la respuesta del servidor
+    unsigned long timeout; // Contador para acumilar el tiempo de espera
+    char tempStr[10]; // Cadena temporal para almacenar los numeros como texto
 
     // Conecta al servidor
     if (!client.connect (emonCMSserverAddress.c_str (), 443)) {
@@ -589,9 +655,9 @@ int8_t sendDataEmonCMS (float tempRadiator,
     return 0; // OK
 }
 
-/********************************************//**
-*  Bucle principal
-***********************************************/
+/**
+@brief Bucle principal
+*/
 void loop () {
     static long lastRun = 0;
 

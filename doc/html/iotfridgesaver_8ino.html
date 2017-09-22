@@ -1,0 +1,1111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>IoTFridgeSaver: Referencia del Archivo iotfridgesaver.ino</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">IoTFridgeSaver
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generado por Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Buscar');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Buscar');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#define-members">defines</a> &#124;
+<a href="#func-members">Funciones</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Referencia del Archivo iotfridgesaver.ino</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Sistema de monitorización de eficiencia energética para frigoríficos.  
+<a href="#details">Más...</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="_config_data_8h_source.html">ConfigData.h</a>&quot;</code><br />
+<code>#include &lt;ESP8266WiFi.h&gt;</code><br />
+<code>#include &lt;ESP8266mDNS.h&gt;</code><br />
+<code>#include &lt;OneWire.h&gt;</code><br />
+<code>#include &lt;DallasTemperature.h&gt;</code><br />
+<code>#include &lt;ArduinoOTA.h&gt;</code><br />
+<code>#include &lt;ArduinoJson.h&gt;</code><br />
+<code>#include &quot;FS.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="_o_t_ahelper_8h_source.html">OTAhelper.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_wifi_manager_setup_8h_source.html">WifiManagerSetup.h</a>&quot;</code><br />
+<code>#include &lt;WiFiManager.h&gt;</code><br />
+<code>#include &lt;OneButton.h&gt;</code><br />
+<code>#include &lt;RemoteDebug.h&gt;</code><br />
+<code>#include &lt;stdlib.h&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;Arduino.h&gt;</code><br />
+<code>#include &lt;EmonLib.h&gt;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+defines</h2></td></tr>
+<tr class="memitem:afd23eb13ce903c107032876ea42a3223"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#afd23eb13ce903c107032876ea42a3223">EMONLIB</a></td></tr>
+<tr class="memdesc:afd23eb13ce903c107032876ea42a3223"><td class="mdescLeft">&#160;</td><td class="mdescRight">Debe estar activado si se usa una pinza CT030 con EmonLib.  <a href="#afd23eb13ce903c107032876ea42a3223">Más...</a><br /></td></tr>
+<tr class="separator:afd23eb13ce903c107032876ea42a3223"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8f8564a6944121058f4c4278894ead1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#aa8f8564a6944121058f4c4278894ead1">NUMBER_OF_SENSORS</a>&#160;&#160;&#160;4</td></tr>
+<tr class="memdesc:aa8f8564a6944121058f4c4278894ead1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Número de sensores esperados.  <a href="#aa8f8564a6944121058f4c4278894ead1">Más...</a><br /></td></tr>
+<tr class="separator:aa8f8564a6944121058f4c4278894ead1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4260ed8874da804fb9ef9abba200b487"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a4260ed8874da804fb9ef9abba200b487">ONE_WIRE_BUS</a>&#160;&#160;&#160;D5</td></tr>
+<tr class="memdesc:a4260ed8874da804fb9ef9abba200b487"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pin de datos para los sensores de temperatura. D5 = GPIO16.  <a href="#a4260ed8874da804fb9ef9abba200b487">Más...</a><br /></td></tr>
+<tr class="separator:a4260ed8874da804fb9ef9abba200b487"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41a331314b46059bd942e76ffc60cf4a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a41a331314b46059bd942e76ffc60cf4a">TEMPERATURE_PRECISION</a>&#160;&#160;&#160;11</td></tr>
+<tr class="memdesc:a41a331314b46059bd942e76ffc60cf4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Número de bits con los que se calcula la temperatura.  <a href="#a41a331314b46059bd942e76ffc60cf4a">Más...</a><br /></td></tr>
+<tr class="separator:a41a331314b46059bd942e76ffc60cf4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Funciones</h2></td></tr>
+<tr class="memitem:a8a1d00f74fee641b711f7f00b8053c1a"><td class="memItemLeft" align="right" valign="top">OneWire&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a8a1d00f74fee641b711f7f00b8053c1a">oneWire</a> (<a class="el" href="iotfridgesaver_8ino.html#a4260ed8874da804fb9ef9abba200b487">ONE_WIRE_BUS</a>)</td></tr>
+<tr class="memdesc:a8a1d00f74fee641b711f7f00b8053c1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instancia OneWire para comunicar con los sensores de temperatura.  <a href="#a8a1d00f74fee641b711f7f00b8053c1a">Más...</a><br /></td></tr>
+<tr class="separator:a8a1d00f74fee641b711f7f00b8053c1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33a4c3104d0e8181871431d9871e7c4c"><td class="memItemLeft" align="right" valign="top">OneButton&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a33a4c3104d0e8181871431d9871e7c4c">button</a> (<a class="el" href="_config_data_8h.html#a539d62e1d57d7c7374a2aa5e37ec73f0">FAN_ENABLE_BUTTON</a>, true)</td></tr>
+<tr class="memdesc:a33a4c3104d0e8181871431d9871e7c4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Objeto que controla el botón. True significa activo a nivel bajo.  <a href="#a33a4c3104d0e8181871431d9871e7c4c">Más...</a><br /></td></tr>
+<tr class="separator:a33a4c3104d0e8181871431d9871e7c4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8245dc0c8296e2814378b8be8936e48f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a8245dc0c8296e2814378b8be8936e48f">debugPrintf</a> (uint8_t debugLevel, const char *format,...)</td></tr>
+<tr class="memdesc:a8245dc0c8296e2814378b8be8936e48f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Envuelve la función Debug.printf para ayudar al deshabilitar la salida de debug.  <a href="#a8245dc0c8296e2814378b8be8936e48f">Más...</a><br /></td></tr>
+<tr class="separator:a8245dc0c8296e2814378b8be8936e48f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91584fce3f1995ac11de69682770035e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a91584fce3f1995ac11de69682770035e">MaxValue</a> (float *<a class="el" href="iotfridgesaver_8ino.html#a18edc0441ead2895019615a5d617d98a">temperatures</a>, uint8_t size)</td></tr>
+<tr class="memdesc:a91584fce3f1995ac11de69682770035e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Función para buscar la posición del valor máximo en el array de temperaturas.  <a href="#a91584fce3f1995ac11de69682770035e">Más...</a><br /></td></tr>
+<tr class="separator:a91584fce3f1995ac11de69682770035e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa343a3fd8a17541db61fa0dac541a663"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#aa343a3fd8a17541db61fa0dac541a663">sortSensors</a> ()</td></tr>
+<tr class="memdesc:aa343a3fd8a17541db61fa0dac541a663"><td class="mdescLeft">&#160;</td><td class="mdescRight">Función para ordenar los sensores de temperatura.  <a href="#aa343a3fd8a17541db61fa0dac541a663">Más...</a><br /></td></tr>
+<tr class="separator:aa343a3fd8a17541db61fa0dac541a663"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6503a49e0b8a6d0e40503c211cea8229"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a6503a49e0b8a6d0e40503c211cea8229">initTempSensors</a> ()</td></tr>
+<tr class="memdesc:a6503a49e0b8a6d0e40503c211cea8229"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inicia los sensores de temperatura.  <a href="#a6503a49e0b8a6d0e40503c211cea8229">Más...</a><br /></td></tr>
+<tr class="separator:a6503a49e0b8a6d0e40503c211cea8229"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23cf60072b22414792ca2d250ecabe13"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a23cf60072b22414792ca2d250ecabe13">configModeCallback</a> ()</td></tr>
+<tr class="memdesc:a23cf60072b22414792ca2d250ecabe13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Se ejecuta cuando WiFiManager se ha conectado a la red WiFi ha recuperado la configuración del formulario.  <a href="#a23cf60072b22414792ca2d250ecabe13">Más...</a><br /></td></tr>
+<tr class="separator:a23cf60072b22414792ca2d250ecabe13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90f71e270ba893cf20fde0b3676b345e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a90f71e270ba893cf20fde0b3676b345e">getCustomData</a> (<a class="el" href="class_my_wi_fi_manager.html">MyWiFiManager</a> &amp;wifiManager)</td></tr>
+<tr class="memdesc:a90f71e270ba893cf20fde0b3676b345e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rellena las variables de consfiguración con los datos que entrega WiFiManager.  <a href="#a90f71e270ba893cf20fde0b3676b345e">Más...</a><br /></td></tr>
+<tr class="separator:a90f71e270ba893cf20fde0b3676b345e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb285aadfebb9862ec09f156e7575a19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#adb285aadfebb9862ec09f156e7575a19">loadConfigData</a> ()</td></tr>
+<tr class="memdesc:adb285aadfebb9862ec09f156e7575a19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Carga los datos de configuración desde el sistema de archivos SPIFFS, desde la flash.  <a href="#adb285aadfebb9862ec09f156e7575a19">Más...</a><br /></td></tr>
+<tr class="separator:adb285aadfebb9862ec09f156e7575a19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00ace26db0a13b1858a4d516fd4fa999"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a00ace26db0a13b1858a4d516fd4fa999">saveConfigData</a> ()</td></tr>
+<tr class="memdesc:a00ace26db0a13b1858a4d516fd4fa999"><td class="mdescLeft">&#160;</td><td class="mdescRight">Guarda los datos de configuración en el sistema de archivos SPIFFS, desde la flash.  <a href="#a00ace26db0a13b1858a4d516fd4fa999">Más...</a><br /></td></tr>
+<tr class="separator:a00ace26db0a13b1858a4d516fd4fa999"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a537d1bbc7ad3b451419fb00d336e2735"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a537d1bbc7ad3b451419fb00d336e2735">startWifiManager</a> (<a class="el" href="class_my_wi_fi_manager.html">MyWiFiManager</a> &amp;wifiManager)</td></tr>
+<tr class="memdesc:a537d1bbc7ad3b451419fb00d336e2735"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inicia el servidor WiFiManager.  <a href="#a537d1bbc7ad3b451419fb00d336e2735">Más...</a><br /></td></tr>
+<tr class="separator:a537d1bbc7ad3b451419fb00d336e2735"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16392a9d5a266938bf7d34a242516acd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a16392a9d5a266938bf7d34a242516acd">button_click</a> ()</td></tr>
+<tr class="memdesc:a16392a9d5a266938bf7d34a242516acd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Se activa al hacer una pulsación corta en el botón.  <a href="#a16392a9d5a266938bf7d34a242516acd">Más...</a><br /></td></tr>
+<tr class="separator:a16392a9d5a266938bf7d34a242516acd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a7d641f8a3932860e4787288851c3e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a5a7d641f8a3932860e4787288851c3e5">long_click</a> ()</td></tr>
+<tr class="memdesc:a5a7d641f8a3932860e4787288851c3e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Se activa al hacer una pulsación larga en el botón.  <a href="#a5a7d641f8a3932860e4787288851c3e5">Más...</a><br /></td></tr>
+<tr class="separator:a5a7d641f8a3932860e4787288851c3e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fc01d736fe50cf5b977f755b675f11d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">setup</a> ()</td></tr>
+<tr class="separator:a4fc01d736fe50cf5b977f755b675f11d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fd68a93f13f87248b2304d00f73ff11"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a8fd68a93f13f87248b2304d00f73ff11">getPower</a> ()</td></tr>
+<tr class="memdesc:a8fd68a93f13f87248b2304d00f73ff11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtiene la medida de consumo en Vatios.  <a href="#a8fd68a93f13f87248b2304d00f73ff11">Más...</a><br /></td></tr>
+<tr class="separator:a8fd68a93f13f87248b2304d00f73ff11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9dfaafcbfb5e6060e1802d04a04a12d4"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a9dfaafcbfb5e6060e1802d04a04a12d4">sendDataEmonCMS</a> (float tempRadiator, float tempAmbient, float tempFridge, float tempFreezer, double watts, double totalWatts, int fanOn)</td></tr>
+<tr class="memdesc:a9dfaafcbfb5e6060e1802d04a04a12d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Envía los datos a la plataforma de EmonCMS.  <a href="#a9dfaafcbfb5e6060e1802d04a04a12d4">Más...</a><br /></td></tr>
+<tr class="separator:a9dfaafcbfb5e6060e1802d04a04a12d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe461d27b9c48d5921c00d521181f12f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#afe461d27b9c48d5921c00d521181f12f">loop</a> ()</td></tr>
+<tr class="memdesc:afe461d27b9c48d5921c00d521181f12f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bucle principal.  <a href="#afe461d27b9c48d5921c00d521181f12f">Más...</a><br /></td></tr>
+<tr class="separator:afe461d27b9c48d5921c00d521181f12f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:aba0b9d35033735bfd7c89a88d1bf472f"><td class="memItemLeft" align="right" valign="top">EnergyMonitor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#aba0b9d35033735bfd7c89a88d1bf472f">emon1</a></td></tr>
+<tr class="memdesc:aba0b9d35033735bfd7c89a88d1bf472f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instancia del monitor de consumo.  <a href="#aba0b9d35033735bfd7c89a88d1bf472f">Más...</a><br /></td></tr>
+<tr class="separator:aba0b9d35033735bfd7c89a88d1bf472f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a796e582d1b845a6029edf222a985f653"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a796e582d1b845a6029edf222a985f653">OTAupdating</a></td></tr>
+<tr class="memdesc:a796e582d1b845a6029edf222a985f653"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verdadero si se está haciendo una actualización OTA.  <a href="#a796e582d1b845a6029edf222a985f653">Más...</a><br /></td></tr>
+<tr class="separator:a796e582d1b845a6029edf222a985f653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ae2f374710d648c2027c78237f5df01"><td class="memItemLeft" align="right" valign="top">RemoteDebug&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a5ae2f374710d648c2027c78237f5df01">Debug</a></td></tr>
+<tr class="memdesc:a5ae2f374710d648c2027c78237f5df01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remote debug telnet server instance.  <a href="#a5ae2f374710d648c2027c78237f5df01">Más...</a><br /></td></tr>
+<tr class="separator:a5ae2f374710d648c2027c78237f5df01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18edc0441ead2895019615a5d617d98a"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a18edc0441ead2895019615a5d617d98a">temperatures</a> [<a class="el" href="iotfridgesaver_8ino.html#aa8f8564a6944121058f4c4278894ead1">NUMBER_OF_SENSORS</a>]</td></tr>
+<tr class="memdesc:a18edc0441ead2895019615a5d617d98a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Espacio para almacenar los valores de temperatura.  <a href="#a18edc0441ead2895019615a5d617d98a">Más...</a><br /></td></tr>
+<tr class="separator:a18edc0441ead2895019615a5d617d98a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac921ed05994a6a78c74ef72fe9ea345b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#ac921ed05994a6a78c74ef72fe9ea345b">fridgeWatts</a></td></tr>
+<tr class="memdesc:ac921ed05994a6a78c74ef72fe9ea345b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Potencia instantánea consumida por el conjunto.  <a href="#ac921ed05994a6a78c74ef72fe9ea345b">Más...</a><br /></td></tr>
+<tr class="separator:ac921ed05994a6a78c74ef72fe9ea345b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbb78d8ca81d7d82f4a492117d72216f"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#acbb78d8ca81d7d82f4a492117d72216f">houseWatts</a></td></tr>
+<tr class="memdesc:acbb78d8ca81d7d82f4a492117d72216f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Potencia instantánea total consumida. Usualmente potencia de la acometida principal de la casa.  <a href="#acbb78d8ca81d7d82f4a492117d72216f">Más...</a><br /></td></tr>
+<tr class="separator:acbb78d8ca81d7d82f4a492117d72216f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c0ad1ec6c8a2b39b597ba651d2b83d1"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a2c0ad1ec6c8a2b39b597ba651d2b83d1">tempAmbient_idx</a></td></tr>
+<tr class="memdesc:a2c0ad1ec6c8a2b39b597ba651d2b83d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice del sensor que mide la temperatura ambiente.  <a href="#a2c0ad1ec6c8a2b39b597ba651d2b83d1">Más...</a><br /></td></tr>
+<tr class="separator:a2c0ad1ec6c8a2b39b597ba651d2b83d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ac9b3d9468e9a695cf67cba4e1665cd"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a4ac9b3d9468e9a695cf67cba4e1665cd">tempRadiator_idx</a></td></tr>
+<tr class="memdesc:a4ac9b3d9468e9a695cf67cba4e1665cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice del sensor que mide la temperatura del radiador del frigorífico.  <a href="#a4ac9b3d9468e9a695cf67cba4e1665cd">Más...</a><br /></td></tr>
+<tr class="separator:a4ac9b3d9468e9a695cf67cba4e1665cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af10306d4579be73b6ceb6050aa9c0be6"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#af10306d4579be73b6ceb6050aa9c0be6">tempFridge_idx</a></td></tr>
+<tr class="memdesc:af10306d4579be73b6ceb6050aa9c0be6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice del sensor que mide la temperatura del frigorífico.  <a href="#af10306d4579be73b6ceb6050aa9c0be6">Más...</a><br /></td></tr>
+<tr class="separator:af10306d4579be73b6ceb6050aa9c0be6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a340373df1cf882fb82c45ae247274ae7"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a340373df1cf882fb82c45ae247274ae7">tempFreezer_idx</a></td></tr>
+<tr class="memdesc:a340373df1cf882fb82c45ae247274ae7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice del sensor que mide la temperatura del congelador.  <a href="#a340373df1cf882fb82c45ae247274ae7">Más...</a><br /></td></tr>
+<tr class="separator:a340373df1cf882fb82c45ae247274ae7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b37428de16897c154a5b2c137f164fd"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a1b37428de16897c154a5b2c137f164fd">numberOfDevices</a> = 0</td></tr>
+<tr class="memdesc:a1b37428de16897c154a5b2c137f164fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Número de sensores detectados. Debería ser igual a NUMBER_OF_SENSORS.  <a href="#a1b37428de16897c154a5b2c137f164fd">Más...</a><br /></td></tr>
+<tr class="separator:a1b37428de16897c154a5b2c137f164fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18aa2e713b723d14e68fe9df63be78a3"><td class="memItemLeft" align="right" valign="top">DallasTemperature sensors &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a18aa2e713b723d14e68fe9df63be78a3">oneWire</a></td></tr>
+<tr class="memdesc:a18aa2e713b723d14e68fe9df63be78a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pasar el bus de datos como referencia.  <a href="#a18aa2e713b723d14e68fe9df63be78a3">Más...</a><br /></td></tr>
+<tr class="separator:a18aa2e713b723d14e68fe9df63be78a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29789e92cbd22bac5071651f0e4c7102"><td class="memItemLeft" align="right" valign="top">const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a29789e92cbd22bac5071651f0e4c7102">minTemperature</a> = -100</td></tr>
+<tr class="memdesc:a29789e92cbd22bac5071651f0e4c7102"><td class="mdescLeft">&#160;</td><td class="mdescRight">Temperatura mínima válida.  <a href="#a29789e92cbd22bac5071651f0e4c7102">Más...</a><br /></td></tr>
+<tr class="separator:a29789e92cbd22bac5071651f0e4c7102"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d512989061f73716e213c919032ccca"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a9d512989061f73716e213c919032ccca">fanEnabled</a> = true</td></tr>
+<tr class="memdesc:a9d512989061f73716e213c919032ccca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verdadero si el ventilador está activado.  <a href="#a9d512989061f73716e213c919032ccca">Más...</a><br /></td></tr>
+<tr class="separator:a9d512989061f73716e213c919032ccca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ce72d8face0e086ac5497a279b6be3e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a0ce72d8face0e086ac5497a279b6be3e">fanSpeed</a> = 0</td></tr>
+<tr class="memdesc:a0ce72d8face0e086ac5497a279b6be3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Velocidad del ventilador.  <a href="#a0ce72d8face0e086ac5497a279b6be3e">Más...</a><br /></td></tr>
+<tr class="separator:a0ce72d8face0e086ac5497a279b6be3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c9617f4630b59fe7c1baebd4ea84b5d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a8c9617f4630b59fe7c1baebd4ea84b5d">shouldSaveConfig</a> = false</td></tr>
+<tr class="memdesc:a8c9617f4630b59fe7c1baebd4ea84b5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verdadero si WiFi Manager activa una configuración nueva.  <a href="#a8c9617f4630b59fe7c1baebd4ea84b5d">Más...</a><br /></td></tr>
+<tr class="separator:a8c9617f4630b59fe7c1baebd4ea84b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a235b23edd19d4c133a8d49bc1b09cedb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a235b23edd19d4c133a8d49bc1b09cedb">configLoaded</a> = false</td></tr>
+<tr class="memdesc:a235b23edd19d4c133a8d49bc1b09cedb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indica si se ha cargado la configuración de la flash. Sin uso actualmente.  <a href="#a235b23edd19d4c133a8d49bc1b09cedb">Más...</a><br /></td></tr>
+<tr class="separator:a235b23edd19d4c133a8d49bc1b09cedb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68f40e6d5915301e3a9e24178d56256b"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a68f40e6d5915301e3a9e24178d56256b">emonCMSserverAddress</a> = &quot;&quot;</td></tr>
+<tr class="memdesc:a68f40e6d5915301e3a9e24178d56256b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dirección del servidor Web que aloja a EmonCMS.  <a href="#a68f40e6d5915301e3a9e24178d56256b">Más...</a><br /></td></tr>
+<tr class="separator:a68f40e6d5915301e3a9e24178d56256b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46022fbaf139ad8040c31313ab167b0b"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a46022fbaf139ad8040c31313ab167b0b">emonCMSserverPath</a> = &quot;&quot;</td></tr>
+<tr class="memdesc:a46022fbaf139ad8040c31313ab167b0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ruta del servicio EmonCMS en el servidor Web.  <a href="#a46022fbaf139ad8040c31313ab167b0b">Más...</a><br /></td></tr>
+<tr class="separator:a46022fbaf139ad8040c31313ab167b0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b2aa7708bef99baab8f896e793cb808"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a4b2aa7708bef99baab8f896e793cb808">emonCMSwriteApiKey</a> = &quot;&quot;</td></tr>
+<tr class="memdesc:a4b2aa7708bef99baab8f896e793cb808"><td class="mdescLeft">&#160;</td><td class="mdescRight">API key del usuario.  <a href="#a4b2aa7708bef99baab8f896e793cb808">Más...</a><br /></td></tr>
+<tr class="separator:a4b2aa7708bef99baab8f896e793cb808"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2de4b346bad86f5e8a20c8660db270a9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a2de4b346bad86f5e8a20c8660db270a9">mainsVoltage</a> = 230</td></tr>
+<tr class="memdesc:a2de4b346bad86f5e8a20c8660db270a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tensión de alimentación.  <a href="#a2de4b346bad86f5e8a20c8660db270a9">Más...</a><br /></td></tr>
+<tr class="separator:a2de4b346bad86f5e8a20c8660db270a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8df3c371e1ed8c0667e59bb46f0d1ba4"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="iotfridgesaver_8ino.html#a8df3c371e1ed8c0667e59bb46f0d1ba4">configFileName</a> = &quot;config.json&quot;</td></tr>
+<tr class="memdesc:a8df3c371e1ed8c0667e59bb46f0d1ba4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nombre del archivo de configuración que se genera en la flash.  <a href="#a8df3c371e1ed8c0667e59bb46f0d1ba4">Más...</a><br /></td></tr>
+<tr class="separator:a8df3c371e1ed8c0667e59bb46f0d1ba4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Descripción detallada</h2>
+<div class="textblock"><p>Sistema de monitorización de eficiencia energética para frigoríficos. </p>
+<p>Iot Fridge Saver es un sistema que monitoriza la temperatura de congeladores y frigoríficos junto con su consumo de electricidad. Además mide también la temperatura ambiente y la del radiador para comprobar la eficiencia. </p>
+</div><h2 class="groupheader">Documentación de los 'defines'</h2>
+<a id="afd23eb13ce903c107032876ea42a3223"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd23eb13ce903c107032876ea42a3223">&#9670;&nbsp;</a></span>EMONLIB</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define EMONLIB</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Debe estar activado si se usa una pinza CT030 con EmonLib. </p>
+
+</div>
+</div>
+<a id="aa8f8564a6944121058f4c4278894ead1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8f8564a6944121058f4c4278894ead1">&#9670;&nbsp;</a></span>NUMBER_OF_SENSORS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NUMBER_OF_SENSORS&#160;&#160;&#160;4</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Número de sensores esperados. </p>
+
+</div>
+</div>
+<a id="a4260ed8874da804fb9ef9abba200b487"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4260ed8874da804fb9ef9abba200b487">&#9670;&nbsp;</a></span>ONE_WIRE_BUS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ONE_WIRE_BUS&#160;&#160;&#160;D5</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pin de datos para los sensores de temperatura. D5 = GPIO16. </p>
+
+</div>
+</div>
+<a id="a41a331314b46059bd942e76ffc60cf4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41a331314b46059bd942e76ffc60cf4a">&#9670;&nbsp;</a></span>TEMPERATURE_PRECISION</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TEMPERATURE_PRECISION&#160;&#160;&#160;11</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Número de bits con los que se calcula la temperatura. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Documentación de las funciones</h2>
+<a id="a33a4c3104d0e8181871431d9871e7c4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33a4c3104d0e8181871431d9871e7c4c">&#9670;&nbsp;</a></span>button()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">OneButton button </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="_config_data_8h.html#a539d62e1d57d7c7374a2aa5e37ec73f0">FAN_ENABLE_BUTTON</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">true&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Objeto que controla el botón. True significa activo a nivel bajo. </p>
+
+</div>
+</div>
+<a id="a16392a9d5a266938bf7d34a242516acd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16392a9d5a266938bf7d34a242516acd">&#9670;&nbsp;</a></span>button_click()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void button_click </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Se activa al hacer una pulsación corta en el botón. </p>
+<p>Conmuta el funcionamiento del ventilador </p>
+
+</div>
+</div>
+<a id="a23cf60072b22414792ca2d250ecabe13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23cf60072b22414792ca2d250ecabe13">&#9670;&nbsp;</a></span>configModeCallback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void configModeCallback </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Se ejecuta cuando WiFiManager se ha conectado a la red WiFi ha recuperado la configuración del formulario. </p>
+<p>Activa la bandera que controla el inicio el almacenamiento de la configuración personalizada en la memoria flash, en el sistema de archivos SPIFFS </p>
+
+</div>
+</div>
+<a id="a8245dc0c8296e2814378b8be8936e48f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8245dc0c8296e2814378b8be8936e48f">&#9670;&nbsp;</a></span>debugPrintf()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void debugPrintf </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>debugLevel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Envuelve la función Debug.printf para ayudar al deshabilitar la salida de debug. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">debugLevel</td><td>Nivel de debug para la librería RemoteDebug. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Cadena a imprimir con marcadores de formatos. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Lista de variables. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a90f71e270ba893cf20fde0b3676b345e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90f71e270ba893cf20fde0b3676b345e">&#9670;&nbsp;</a></span>getCustomData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void getCustomData </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_my_wi_fi_manager.html">MyWiFiManager</a> &amp;&#160;</td>
+          <td class="paramname"><em>wifiManager</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Rellena las variables de consfiguración con los datos que entrega WiFiManager. </p>
+<p>Comprueba él formato de los datos numéricos, para evitar errores de ejecución. Si hay un error reinicia el dispositivo</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">wifiManager</td><td>Referencia al objeto WiFiManager. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a8fd68a93f13f87248b2304d00f73ff11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fd68a93f13f87248b2304d00f73ff11">&#9670;&nbsp;</a></span>getPower()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double getPower </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Obtiene la medida de consumo en Vatios. </p>
+<dl class="section return"><dt>Devuelve</dt><dd>Valor de la medida en Vatios, en formato double </dd></dl>
+
+</div>
+</div>
+<a id="a6503a49e0b8a6d0e40503c211cea8229"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6503a49e0b8a6d0e40503c211cea8229">&#9670;&nbsp;</a></span>initTempSensors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t initTempSensors </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Inicia los sensores de temperatura. </p>
+<dl class="section return"><dt>Devuelve</dt><dd>Número de sensores se han encontrado </dd></dl>
+
+</div>
+</div>
+<a id="adb285aadfebb9862ec09f156e7575a19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb285aadfebb9862ec09f156e7575a19">&#9670;&nbsp;</a></span>loadConfigData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void loadConfigData </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Carga los datos de configuración desde el sistema de archivos SPIFFS, desde la flash. </p>
+<p>Inicia el sistema de archivos si éste es incorrecto. </p>
+
+</div>
+</div>
+<a id="a5a7d641f8a3932860e4787288851c3e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a7d641f8a3932860e4787288851c3e5">&#9670;&nbsp;</a></span>long_click()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void long_click </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Se activa al hacer una pulsación larga en el botón. </p>
+<p>Reinicia el dispositivo a la configuración de fábrica y lo reinicia para que pida de nuevo los datos de configuración al usuario </p>
+
+</div>
+</div>
+<a id="afe461d27b9c48d5921c00d521181f12f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe461d27b9c48d5921c00d521181f12f">&#9670;&nbsp;</a></span>loop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void loop </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bucle principal. </p>
+
+</div>
+</div>
+<a id="a91584fce3f1995ac11de69682770035e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91584fce3f1995ac11de69682770035e">&#9670;&nbsp;</a></span>MaxValue()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int MaxValue </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>temperatures</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Función para buscar la posición del valor máximo en el array de temperaturas. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temperatures</td><td>Array de valores en formato float. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Tamaño del Array. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>El índice del mayor valor del array </dd></dl>
+
+</div>
+</div>
+<a id="a8a1d00f74fee641b711f7f00b8053c1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a1d00f74fee641b711f7f00b8053c1a">&#9670;&nbsp;</a></span>oneWire()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">OneWire oneWire </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="iotfridgesaver_8ino.html#a4260ed8874da804fb9ef9abba200b487">ONE_WIRE_BUS</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Instancia OneWire para comunicar con los sensores de temperatura. </p>
+
+</div>
+</div>
+<a id="a00ace26db0a13b1858a4d516fd4fa999"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00ace26db0a13b1858a4d516fd4fa999">&#9670;&nbsp;</a></span>saveConfigData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void saveConfigData </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Guarda los datos de configuración en el sistema de archivos SPIFFS, desde la flash. </p>
+
+</div>
+</div>
+<a id="a9dfaafcbfb5e6060e1802d04a04a12d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9dfaafcbfb5e6060e1802d04a04a12d4">&#9670;&nbsp;</a></span>sendDataEmonCMS()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int8_t sendDataEmonCMS </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>tempRadiator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>tempAmbient</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>tempFridge</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>tempFreezer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>watts</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>totalWatts</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fanOn</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Envía los datos a la plataforma de EmonCMS. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tempRadiator</td><td>Temperatura del radiador del frigorífico </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tempAmbient</td><td>Temperatura ambiente en el exterior del frigorífico </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tempFridge</td><td>Temperatura del interior del frigorífico </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tempFreezer</td><td>Temperatura del interior del congelador </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">watts</td><td>Consumo del frigorífico </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">totalWatts</td><td>Consumo total de la casa </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fanOn</td><td>Velocidad del ventilador</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>-1 si hay error de conexión. </dd>
+<dd>
+-2 si ha pasado el tiempo de espera al enviar los datos o esperar la respuesta </dd>
+<dd>
+0 si el envío ha sido correcto </dd></dl>
+
+</div>
+</div>
+<a id="a4fc01d736fe50cf5b977f755b675f11d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fc01d736fe50cf5b977f755b675f11d">&#9670;&nbsp;</a></span>setup()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setup </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa343a3fd8a17541db61fa0dac541a663"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa343a3fd8a17541db61fa0dac541a663">&#9670;&nbsp;</a></span>sortSensors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void sortSensors </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Función para ordenar los sensores de temperatura. </p>
+<p>Ordena, de mayor a menor, los índices de los sensores según la secuencia Radiador, Ambiente, Frigorífico, Congelador </p>
+
+</div>
+</div>
+<a id="a537d1bbc7ad3b451419fb00d336e2735"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a537d1bbc7ad3b451419fb00d336e2735">&#9670;&nbsp;</a></span>startWifiManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void startWifiManager </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_my_wi_fi_manager.html">MyWiFiManager</a> &amp;&#160;</td>
+          <td class="paramname"><em>wifiManager</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Inicia el servidor WiFiManager. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Documentación de las variables</h2>
+<a id="a8df3c371e1ed8c0667e59bb46f0d1ba4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8df3c371e1ed8c0667e59bb46f0d1ba4">&#9670;&nbsp;</a></span>configFileName</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* configFileName = &quot;config.json&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Nombre del archivo de configuración que se genera en la flash. </p>
+
+</div>
+</div>
+<a id="a235b23edd19d4c133a8d49bc1b09cedb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a235b23edd19d4c133a8d49bc1b09cedb">&#9670;&nbsp;</a></span>configLoaded</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool configLoaded = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Indica si se ha cargado la configuración de la flash. Sin uso actualmente. </p>
+
+</div>
+</div>
+<a id="a5ae2f374710d648c2027c78237f5df01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ae2f374710d648c2027c78237f5df01">&#9670;&nbsp;</a></span>Debug</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">RemoteDebug Debug</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Remote debug telnet server instance. </p>
+
+</div>
+</div>
+<a id="aba0b9d35033735bfd7c89a88d1bf472f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba0b9d35033735bfd7c89a88d1bf472f">&#9670;&nbsp;</a></span>emon1</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EnergyMonitor emon1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Instancia del monitor de consumo. </p>
+
+</div>
+</div>
+<a id="a68f40e6d5915301e3a9e24178d56256b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68f40e6d5915301e3a9e24178d56256b">&#9670;&nbsp;</a></span>emonCMSserverAddress</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">String emonCMSserverAddress = &quot;&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Dirección del servidor Web que aloja a EmonCMS. </p>
+
+</div>
+</div>
+<a id="a46022fbaf139ad8040c31313ab167b0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46022fbaf139ad8040c31313ab167b0b">&#9670;&nbsp;</a></span>emonCMSserverPath</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">String emonCMSserverPath = &quot;&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Ruta del servicio EmonCMS en el servidor Web. </p>
+
+</div>
+</div>
+<a id="a4b2aa7708bef99baab8f896e793cb808"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b2aa7708bef99baab8f896e793cb808">&#9670;&nbsp;</a></span>emonCMSwriteApiKey</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">String emonCMSwriteApiKey = &quot;&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>API key del usuario. </p>
+
+</div>
+</div>
+<a id="a9d512989061f73716e213c919032ccca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d512989061f73716e213c919032ccca">&#9670;&nbsp;</a></span>fanEnabled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fanEnabled = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Verdadero si el ventilador está activado. </p>
+
+</div>
+</div>
+<a id="a0ce72d8face0e086ac5497a279b6be3e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ce72d8face0e086ac5497a279b6be3e">&#9670;&nbsp;</a></span>fanSpeed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int fanSpeed = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Velocidad del ventilador. </p>
+
+</div>
+</div>
+<a id="ac921ed05994a6a78c74ef72fe9ea345b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac921ed05994a6a78c74ef72fe9ea345b">&#9670;&nbsp;</a></span>fridgeWatts</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double fridgeWatts</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Potencia instantánea consumida por el conjunto. </p>
+
+</div>
+</div>
+<a id="acbb78d8ca81d7d82f4a492117d72216f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acbb78d8ca81d7d82f4a492117d72216f">&#9670;&nbsp;</a></span>houseWatts</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double houseWatts</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Potencia instantánea total consumida. Usualmente potencia de la acometida principal de la casa. </p>
+
+</div>
+</div>
+<a id="a2de4b346bad86f5e8a20c8660db270a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2de4b346bad86f5e8a20c8660db270a9">&#9670;&nbsp;</a></span>mainsVoltage</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int mainsVoltage = 230</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tensión de alimentación. </p>
+
+</div>
+</div>
+<a id="a29789e92cbd22bac5071651f0e4c7102"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29789e92cbd22bac5071651f0e4c7102">&#9670;&nbsp;</a></span>minTemperature</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const int minTemperature = -100</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Temperatura mínima válida. </p>
+
+</div>
+</div>
+<a id="a1b37428de16897c154a5b2c137f164fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b37428de16897c154a5b2c137f164fd">&#9670;&nbsp;</a></span>numberOfDevices</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t numberOfDevices = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Número de sensores detectados. Debería ser igual a NUMBER_OF_SENSORS. </p>
+
+</div>
+</div>
+<a id="a18aa2e713b723d14e68fe9df63be78a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18aa2e713b723d14e68fe9df63be78a3">&#9670;&nbsp;</a></span>oneWire</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DallasTemperature sensors&amp; oneWire</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pasar el bus de datos como referencia. </p>
+
+</div>
+</div>
+<a id="a796e582d1b845a6029edf222a985f653"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a796e582d1b845a6029edf222a985f653">&#9670;&nbsp;</a></span>OTAupdating</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool OTAupdating</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Verdadero si se está haciendo una actualización OTA. </p>
+<p>Indica si el proceso de actualización está activo, para deshabilitar el resto de procesos. </p>
+
+</div>
+</div>
+<a id="a8c9617f4630b59fe7c1baebd4ea84b5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c9617f4630b59fe7c1baebd4ea84b5d">&#9670;&nbsp;</a></span>shouldSaveConfig</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool shouldSaveConfig = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Verdadero si WiFi Manager activa una configuración nueva. </p>
+
+</div>
+</div>
+<a id="a2c0ad1ec6c8a2b39b597ba651d2b83d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c0ad1ec6c8a2b39b597ba651d2b83d1">&#9670;&nbsp;</a></span>tempAmbient_idx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t tempAmbient_idx</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Índice del sensor que mide la temperatura ambiente. </p>
+
+</div>
+</div>
+<a id="a18edc0441ead2895019615a5d617d98a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18edc0441ead2895019615a5d617d98a">&#9670;&nbsp;</a></span>temperatures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float temperatures[<a class="el" href="iotfridgesaver_8ino.html#aa8f8564a6944121058f4c4278894ead1">NUMBER_OF_SENSORS</a>]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Espacio para almacenar los valores de temperatura. </p>
+
+</div>
+</div>
+<a id="a340373df1cf882fb82c45ae247274ae7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a340373df1cf882fb82c45ae247274ae7">&#9670;&nbsp;</a></span>tempFreezer_idx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t tempFreezer_idx</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Índice del sensor que mide la temperatura del congelador. </p>
+
+</div>
+</div>
+<a id="af10306d4579be73b6ceb6050aa9c0be6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af10306d4579be73b6ceb6050aa9c0be6">&#9670;&nbsp;</a></span>tempFridge_idx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t tempFridge_idx</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Índice del sensor que mide la temperatura del frigorífico. </p>
+
+</div>
+</div>
+<a id="a4ac9b3d9468e9a695cf67cba4e1665cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ac9b3d9468e9a695cf67cba4e1665cd">&#9670;&nbsp;</a></span>tempRadiator_idx</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t tempRadiator_idx</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Índice del sensor que mide la temperatura del radiador del frigorífico. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Generado por &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.13
+</small></address>
+</body>
+</html>

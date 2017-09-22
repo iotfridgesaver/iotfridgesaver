@@ -1,5 +1,11 @@
-// WifiManagerSetup.h
-
+/**
+* @file WifiManagerSetup.h
+* \~English
+* @brief Wrapper for WiFiManager class to setup server with only one line 
+*
+* \~Spanish
+* @brief Envoltorio para la clase WiFiManager para iniciar el servidor con una sola línea
+*/
 #ifndef _WIFIMANAGERSETUP_h
 #define _WIFIMANAGERSETUP_h
 
@@ -11,6 +17,14 @@
 
 #include <WiFiManager.h>    // https://github.com/tzapu/WiFiManager
 
+/**
+* @class MyWiFiManager
+* \~English
+* @brief Wrapper for WiFiManager class to setup server with only one line
+*
+* \~Spanish
+* @brief Envoltorio para la clase WiFiManager para iniciar el servidor con una sola línea
+*/
 class MyWiFiManager : public WiFiManager {
 protected:
     //AsyncWiFiManagerParameter * customNTPServer;
@@ -23,12 +37,12 @@ protected:
     String emonCMSwriteApiKey;
     int mainsVoltage;*/
 public:
-	MyWiFiManager();
-	void init();
-    String getEmonCMSserverAddress ();
-    String getEmonCMSserverPath ();
-    String getEmonCMSwriteApiKey ();
-    int getMainsVoltage ();
+	MyWiFiManager(); ///< Constructor
+	void init();     ///< Inicia el servidor WiFiManager con los parámetros específicos del proyecto
+    String getEmonCMSserverAddress ();  ///< Obtiene la dirección del servidor de EmonCMS
+    String getEmonCMSserverPath ();     ///< Obtiene la ruta del servidor de EmonCMS
+    String getEmonCMSwriteApiKey ();    ///< Obtiene la clave API del usuario
+    int getMainsVoltage ();             ///< Obtiene la tensión configurada por el usuario
 };
 
 #endif
