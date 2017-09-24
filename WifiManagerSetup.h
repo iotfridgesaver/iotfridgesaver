@@ -34,7 +34,7 @@ protected:
     WiFiManagerParameter * _emonCMSserverPathCParam;
     WiFiManagerParameter * _emonCMSwriteApiKeyCParam;
     WiFiManagerParameter * _mainsVoltageCParam;
-#ifdef MQTT
+#ifdef MQTT_POWER_INPUT
     WiFiManagerParameter * _MQTTserverCParam;
     WiFiManagerParameter * _MQTTfridgeTopicCParam;
     WiFiManagerParameter * _MQTTtotalTopicCParam;
@@ -50,7 +50,7 @@ public:
     String getEmonCMSserverAddress ();  ///< Obtiene la dirección del servidor de EmonCMS
     String getEmonCMSserverPath ();     ///< Obtiene la ruta del servidor de EmonCMS
     String getEmonCMSwriteApiKey ();    ///< Obtiene la clave API del usuario
-#ifdef MQTT
+#ifdef MQTT_POWER_INPUT
     String getMQTTserver ();            ///< Obtiene la dirección del servidor MQTT
     int16_t getMQTTport ();             ///< Obtiene el puerto del servidor MQTT
     String getFridgeMQTTtopic ();       ///< Obtiene el topic del consumo del frigorífico

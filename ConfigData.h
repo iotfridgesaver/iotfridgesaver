@@ -14,7 +14,7 @@
 #define DEBUG_ENABLED   ///<\~Spanish Activa la salida de debug por Telnet
 #define DEBUG_SERIAL    ///<\~Spanish Activa la salida de debug por puerto serie
 #define WIFI_MANAGER    ///<\~Spanish Activa la configuración con WiFiManager
-#define MQTT            ///<\~Spanish Activa la recepción de la medida de potencia por MQTT
+#define MQTT_POWER_INPUT            ///<\~Spanish Activa la recepción de la medida de potencia por MQTT_POWER_INPUT
 //#define EMONLIB       ///<\~English If enabled it uses Emonlib library to measure power using a clamp sensor \~Spanish Debe estar activado si se usa una pinza CT030 con EmonLib
 
 #ifndef WIFI_MANAGER
