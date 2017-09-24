@@ -49,8 +49,8 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
 #ifdef MQTT
     _MQTTserverCParam = new WiFiManagerParameter ("mqtt_server", "MQTT server", "", MAX_STRING_LENGTH);
     _MQTTportCParam = new WiFiManagerParameter ("mqtt_port", "MQTT server port", "1883", MAX_STRING_LENGTH);
-    _MQTTfridgeTopicCParam = new WiFiManagerParameter ("mqtt_fridge_topic", "MQTT topic", "", MAX_STRING_LENGTH);
-    _MQTTtotalTopicCParam = new WiFiManagerParameter ("mqtt_total_topic", "MQTT topic", "", MAX_STRING_LENGTH);
+    _MQTTfridgeTopicCParam = new WiFiManagerParameter ("mqtt_fridge_topic", "Fridge MQTT topic", "", MAX_STRING_LENGTH);
+    _MQTTtotalTopicCParam = new WiFiManagerParameter ("mqtt_total_topic", "House MQTT topic", "", MAX_STRING_LENGTH);
 
 #endif
 

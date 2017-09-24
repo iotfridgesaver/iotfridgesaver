@@ -304,7 +304,7 @@ void getCustomData (MyWiFiManager &wifiManager) {
     mqttServerName = wifiManager.getMQTTserver();
     mqttServerPort = wifiManager.getMQTTport ();
     mqttFridgePowerTopic = wifiManager.getFridgeMQTTtopic ();
-    mqttTotalPowerTopic = wifiManager.getFridgeMQTTtopic ();
+    mqttTotalPowerTopic = wifiManager.getTotalMQTTtopic ();
 #endif
 
 #ifdef DEBUG_ENABLED
