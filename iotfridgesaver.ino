@@ -529,7 +529,11 @@ void setup () {
 #ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "Error en el numero de sensores: %d\n", numberOfDevices);
 #endif // DEBUG_ENABLED
-            delay (1000);
+            //ArduinoOTA.handle ();
+            button.tick ();
+            Debug.handle ();
+
+            delay (500);
         }
     }
 
