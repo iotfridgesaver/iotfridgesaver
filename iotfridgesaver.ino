@@ -39,7 +39,8 @@
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
 EnergyMonitor emon1;                    ///<\~Spanish Instancia del monitor de consumo
-#elif defined MQTT_POWER_INPUT
+#endif // EMONLIB
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
 #include <PubSubClient.h>
 WiFiClient client;
 PubSubClient mqttClient (client);
@@ -72,18 +73,38 @@ int fanSpeed = 0;                       ///<\~Spanish Velocidad del ventilador
 bool shouldSaveConfig = false;          ///<\~Spanish Verdadero si WiFi Manager activa una configuración nueva
 bool configLoaded = false;              ///<\~Spanish Indica si se ha cargado la configuración de la flash. Sin uso actualmente
 
+#ifndef WIFI_MANAGER
+const char* WIFI_SSID = "NOMBRE_DE_MI_RED"; ///<\~Spanish Nombre de la red WiFi. Solo si no se usa WiFiManager
+const char* WIFI_PASS = "CONTRASEÑA";       ///<\~Spanish Contraseña de la red WiFi. Solo si no se usa WiFiManager
+String emonCMSserverAddress = "SERVIDOR_EMONCMS";       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
+String emonCMSserverPath = "RUTA_SERVIDOR_EMONCMS";          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
+String emonCMSwriteApiKey = "API_KEY_EMONCMS";         ///<\~Spanish API key del usuario
+int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
+String mqttServerName = "BROKER_MQTT";             ///<\~Spanish Nombre del servidor MQTT
+uint16_t mqttServerPort = 1883;         ///<\~Spanish Puerto del ervidor MQTT
+#ifdef MQTT_POWER_INPUT
+String mqttFridgePowerTopic = "TOPIC_CONSUMO_FRIGO";       ///<\~Spanish Topic del consumo del frigorífico
+String mqttTotalPowerTopic = "TOPIC_CONSUMO_TOTAL_CASA";        ///<\~Spanish Topic del consumo total de la vivienda
+#endif // MQTT_POWER_INPUT
+bool mqttStarted = false;               ///<\~Spanish Tensión de alimentación
+#endif
+#else
 String emonCMSserverAddress = "";       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
 String emonCMSserverPath = "";          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
 String emonCMSwriteApiKey = "";         ///<\~Spanish API key del usuario
 int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
 String mqttServerName = "";             ///<\~Spanish Nombre del servidor MQTT
 uint16_t mqttServerPort = 1883;         ///<\~Spanish Puerto del ervidor MQTT
+#ifdef MQTT_POWER_INPUT
 String mqttFridgePowerTopic = "";       ///<\~Spanish Topic del consumo del frigorífico
 String mqttTotalPowerTopic = "";        ///<\~Spanish Topic del consumo total de la vivienda
+#endif // MQTT_POWER_INPUT
 bool mqttStarted = false;               ///<\~Spanish Tensión de alimentación
 #endif
 const char *configFileName = "config.json"; ///<\~Spanish Nombre del archivo de configuración que se genera en la flash
+#endif // WIFI_MANAGER
 
 TimeAlarmsClass alarmDaily;
 AverageCalculator ambientAverage;
@@ -124,7 +145,7 @@ void debugPrintf (uint8_t debugLevel, const char* format, ...) {
     }
 }
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
 /**
 @brief Conecta al servidor MQTT al iniciar el programa y en caso de desconexión.
 
@@ -141,8 +162,10 @@ void reconnect () {
             mqttClient.publish ("outTopic", "IotFridgeSaver/hello world");
             // ... and resubscribe
             //mqttClient.subscribe("inTopic");
+#ifdef MQTT_POWER_INPUT
             mqttClient.subscribe (mqttFridgePowerTopic.c_str ());
             mqttClient.subscribe (mqttTotalPowerTopic.c_str ());
+#endif
         } else {
             debugPrintf (Debug.INFO, "failed, rc=%d try again in 5 seconds\n", mqttClient.state ());
             // Wait 5 seconds before retrying
@@ -300,11 +323,13 @@ void getCustomData (MyWiFiManager &wifiManager) {
     emonCMSserverPath = wifiManager.getEmonCMSserverPath ();
     emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
     mainsVoltage = wifiManager.getMainsVoltage ();
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     mqttServerName = wifiManager.getMQTTserver();
     mqttServerPort = wifiManager.getMQTTport ();
+#ifdef MQTT_POWER_INPUT
     mqttFridgePowerTopic = wifiManager.getFridgeMQTTtopic ();
     mqttTotalPowerTopic = wifiManager.getTotalMQTTtopic ();
+#endif // MQTT_POWER_INPUT
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -313,11 +338,13 @@ void getCustomData (MyWiFiManager &wifiManager) {
     debugPrintf (Debug.INFO, "API Key: %s\n", emonCMSwriteApiKey.c_str ());
     debugPrintf (Debug.INFO, "Tensión: %d\n", mainsVoltage);
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     debugPrintf (Debug.INFO, "Servidor MQTT: %s\n", mqttServerName.c_str());
     debugPrintf (Debug.INFO, "Puerto MQTT: %d\n", mqttServerPort);
+#ifdef MQTT_POWER_INPUT
     debugPrintf (Debug.INFO, "Topic MQTT frigorífico: %s\n", mqttFridgePowerTopic.c_str());
     debugPrintf (Debug.INFO, "Topic MQTT total: %s\n", mqttTotalPowerTopic.c_str ());
+#endif // MQTT_POWER_INPUT
 #endif
 #endif // DEBUG_ENABLED
 
@@ -376,17 +403,18 @@ void loadConfigData () {
                     debugPrintf (Debug.INFO, "\nparsed json\n");
 #endif // DEBUG_ENABLED
 
-                    //strcpy (mqtt_server, json["mqtt_server"]);
                     emonCMSserverAddress = json.get<String> ("emonCMSserver");
                     emonCMSserverPath = json.get<String> ("emonCMSpath");
                     emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
                     mainsVoltage = json.get<int> ("mainsVoltage");
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
                     mqttServerName = json.get<String> ("mqttServerName");
                     mqttServerPort = json.get<int> ("mqttServerPort");
+#ifdef MQTT_POWER_INPUT
                     mqttFridgePowerTopic = json.get<String> ("mqttFridgePowerTopic");
                     mqttTotalPowerTopic = json.get<String> ("mqttTotalPowerTopic");
+#endif // MQTT_POWER_INPUT
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -395,11 +423,13 @@ void loadConfigData () {
                     debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
                     debugPrintf (Debug.INFO, "mainsVoltage: %d\n", mainsVoltage);
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
                     debugPrintf (Debug.INFO, "mqttServerName: %s\n", mqttServerName.c_str ());
                     debugPrintf (Debug.INFO, "mqttServerPort: %d\n", mqttServerPort);
+#ifdef MQTT_POWER_INPUT
                     debugPrintf (Debug.INFO, "mqttFridgePowerTopic: %s\n", mqttFridgePowerTopic.c_str ());
                     debugPrintf (Debug.INFO, "mqttTotalPowerTopic: %s\n", mqttTotalPowerTopic.c_str ());
+#endif // MQTT_POWER_INPUT
 #endif
 
 #endif // DEBUG_ENABLED
@@ -454,11 +484,13 @@ void saveConfigData () {
         json["emonCMSapiKey"] = emonCMSwriteApiKey;
         json["mainsVoltage"] = mainsVoltage;
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
         json["mqttServerName"] = mqttServerName;
         json["mqttServerPort"] = mqttServerPort;
+#ifdef MQTT_POWER_INPUT 
         json["mqttFridgePowerTopic"] = mqttFridgePowerTopic;
         json["mqttTotalPowerTopic"] = mqttTotalPowerTopic;
+#endif // MQTT_POWER_INPUT
 #endif
 
         File configFile = SPIFFS.open (configFileName, "w");
@@ -591,8 +623,10 @@ void setup () {
     analogWrite (FAN_PWM_PIN, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
     pinMode (FAN_ENABLE_BUTTON, INPUT);
     button.attachClick (button_click);
+#ifdef WIFI_MANAGER
     button.setPressTicks (t_longPress);
     button.attachPress (long_click);
+#endif // WIFI_MANAGER
 
 #ifdef DEBUG_SERIAL
     Debug.setSerialEnabled (true);
@@ -607,8 +641,11 @@ void setup () {
 
     // Si no se han configurado los datos del servidor borrar la configuración
     if (emonCMSserverAddress == "" || emonCMSserverPath == "" || emonCMSwriteApiKey == ""
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
+        || mqttServerName == "" 
 #ifdef MQTT_POWER_INPUT
-        || mqttServerName == "" || mqttFridgePowerTopic == "" || mqttTotalPowerTopic == ""
+        || mqttFridgePowerTopic == "" || mqttTotalPowerTopic == ""
+#endif // MQTT_POWER_INPUT
 #endif
         ) {
         wifiManager.resetSettings ();
@@ -647,18 +684,22 @@ void setup () {
     debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
     debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
     debugPrintf (Debug.INFO, "mainsVoltage: %d\n", mainsVoltage);
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     debugPrintf (Debug.INFO, "mqttServerName: %s\n", mqttServerName.c_str());
     debugPrintf (Debug.INFO, "mqttServerPort: %d\n", mqttServerPort);
+#ifdef MQTT_POWER_INPUT
     debugPrintf (Debug.INFO, "mqttFridgePowerTopic: %s\n", mqttFridgePowerTopic.c_str());
     debugPrintf (Debug.INFO, "mqttTotalPowerTopic: %s\n", mqttTotalPowerTopic.c_str ());
+#endif // MQTT_POWER_INPUT
 #endif
 #endif // DEBUG_ENABLED
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     if (mqttServerName != "" && mqttServerPort != 0) {
         mqttClient.setServer (mqttServerName.c_str (), mqttServerPort);
+#ifdef MQTT_POWER_INPUT
         mqttClient.setCallback (getPowerMeasurement);
+#endif // MQTT_POWER_INPUT
         mqttStarted = true;
     }
 #endif
@@ -870,6 +911,7 @@ void loop () {
         temperatures[tempFreezer_idx] = random (-2000, -1500) / (float)100;
 #ifndef MQTT_POWER_INPUT
         watts = random (0,100);
+        houseWatts = random (0, 3000);
 #endif //MQTT_POWER_INPUT
 #endif
 
@@ -884,7 +926,7 @@ void loop () {
         
         if (sendAverage) {
             sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed, aveTemperatures[tempAmbient_idx]);
-#ifdef MQTT_POWER_INPUT
+#ifdef MQTT_FEED_SEND
             mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempAmbient_ave", String (aveTemperatures[tempAmbient_idx]).c_str (), true);
@@ -893,11 +935,11 @@ void loop () {
             mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
-#endif
+#endif // MQTT_FEED_SEND
             sendAverage = false;
         } else {
             sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
-#ifdef MQTT_POWER_INPUT
+#ifdef MQTT_FEED_SEND
             mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str());
             mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
             mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
@@ -905,12 +947,12 @@ void loop () {
             mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
             mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
-#endif
+#endif // MQTT_FEED_SEND
         }
 
     }
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     if (mqttStarted) {
         if (!client.connected ()) {
             debugPrintf (Debug.INFO, "MQTT Reconnect");

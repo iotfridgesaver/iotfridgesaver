@@ -46,12 +46,13 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
     _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
     _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     _MQTTserverCParam = new WiFiManagerParameter ("mqtt_server", "MQTT server", "", MAX_STRING_LENGTH);
     _MQTTportCParam = new WiFiManagerParameter ("mqtt_port", "MQTT server port", "1883", MAX_STRING_LENGTH);
+#ifdef MQTT_POWER_INPUT
     _MQTTfridgeTopicCParam = new WiFiManagerParameter ("mqtt_fridge_topic", "Fridge MQTT topic", "", MAX_STRING_LENGTH);
     _MQTTtotalTopicCParam = new WiFiManagerParameter ("mqtt_total_topic", "House MQTT topic", "", MAX_STRING_LENGTH);
-
+#endif // MQTT_POWER_INPUT
 #endif
 
     setConnectTimeout(30);
@@ -61,11 +62,13 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
     addParameter(_emonCMSwriteApiKeyCParam);
     addParameter (_mainsVoltageCParam);
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     addParameter (_MQTTserverCParam);
     addParameter (_MQTTportCParam);
+#ifdef MQTT_POWER_INPUT
     addParameter (_MQTTfridgeTopicCParam);
     addParameter (_MQTTtotalTopicCParam);
+#endif // MQTT_POWER_INPUT
 #endif
 
     if (!autoConnect()) {
@@ -76,7 +79,7 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
     }
 }
 
-#ifdef MQTT_POWER_INPUT
+#if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
 String MyWiFiManager::getMQTTserver () {
     const char * charStr = _MQTTserverCParam->getValue ();
     return String (charStr);
@@ -87,6 +90,7 @@ int16_t MyWiFiManager::getMQTTport () {
     return atoi (charStr);
 }
 
+#ifdef MQTT_POWER_INPUT
 String MyWiFiManager::getFridgeMQTTtopic () {
     const char * charStr = _MQTTfridgeTopicCParam->getValue ();
     return String (charStr);
@@ -96,6 +100,7 @@ String MyWiFiManager::getTotalMQTTtopic () {
     const char * charStr = _MQTTtotalTopicCParam->getValue ();
     return String (charStr);
 }
+#endif // MQTT_POWER_INPUT
 #endif
 
 String MyWiFiManager::getEmonCMSserverAddress () {
