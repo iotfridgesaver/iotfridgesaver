@@ -742,6 +742,8 @@ void setup () {
     NTP.begin ("es.pool.ntp.org", 1, true);
 
 #ifdef DEBUG_ENABLED
+    Debug.begin ("IoTFridgeSaver");
+
     debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
     debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
     debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
