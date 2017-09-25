@@ -735,8 +735,7 @@ void setup () {
     }
     //----------------------------------------------------------------------
 #endif // WIFI_MANAGER
-    Debug.begin ("IoTFridgeSaver");
-    
+
     Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
     NTP.begin ("es.pool.ntp.org", 1, true);
