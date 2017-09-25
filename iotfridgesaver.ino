@@ -28,8 +28,10 @@
 #include <ArduinoJson.h>
 #include "FS.h"
 #include "OTAhelper.h"
+#ifdef WIFI_MANAGER
 #include "WifiManagerSetup.h"
 #include <WiFiManager.h>
+#endif // WIFI_MANAGER
 #include <OneButton.h>
 
 #include <NtpClientLib.h>
@@ -614,7 +616,9 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
 *  Setup
 ***********************************************/
 void setup () {
+#ifdef WIFI_MANAGER
     MyWiFiManager wifiManager;              // WiFi Manager. Configura los datos WiFi y otras configuraciones
+#endif // WIFI_MANAGER
 
     Serial.begin (115200);
     // Control del ventilador y pequeño "aceleron"

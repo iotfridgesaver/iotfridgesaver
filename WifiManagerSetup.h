@@ -8,6 +8,7 @@
 */
 #ifndef _WIFIMANAGERSETUP_h
 #define _WIFIMANAGERSETUP_h
+#ifdef WIFI_MANAGER
 
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
@@ -63,5 +64,6 @@ public:
     int getMainsVoltage ();             ///< Obtiene la tensión configurada por el usuario
 };
 
+#endif WIFI_MANAGER
 #endif
 

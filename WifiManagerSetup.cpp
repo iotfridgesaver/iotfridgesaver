@@ -1,3 +1,5 @@
+#ifdef WIFI_MANAGER
+
 /**
 * @file WifiManagerSetup.cpp
 * \~English
@@ -124,3 +126,5 @@ int MyWiFiManager::getMainsVoltage () {
 }
 
 MyWiFiManager::MyWiFiManager() : WiFiManager () {}
+
+#endif // WIFI_MANAGER
