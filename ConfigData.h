@@ -11,7 +11,10 @@
 #define _CONFIGDATA_h
 
 #define DEBUG_ENABLED   ///<\~Spanish Activa la salida de debug por Telnet
+#ifdef DEBUG_ENABLED
 #define DEBUG_SERIAL    ///<\~Spanish Activa la salida de debug por puerto serie
+#endif // DEBUG_ENABLED
+
 #define WIFI_MANAGER    ///<\~Spanish Activa la configuración con WiFiManager
 
 #define FAN_ENABLE_BUTTON   D3      ///<\~Spanish Pin donde conectar el botón para activar el ventilador

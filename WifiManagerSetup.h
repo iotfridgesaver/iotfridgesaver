@@ -8,6 +8,7 @@
 */
 #ifndef _WIFIMANAGERSETUP_h
 #define _WIFIMANAGERSETUP_h
+#include "ConfigData.h"
 #ifdef WIFI_MANAGER
 
 #if defined(ARDUINO) && ARDUINO >= 100
