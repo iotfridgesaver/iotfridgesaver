@@ -28,6 +28,7 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
     _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
     _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
     setConnectTimeout(WIFI_TIMEOUT);
+    setConfigPortalTimeout (CONFIG_PORTAL_TIMEOUT);
     //setCustomHeadElement("<style>input[type='checkbox'] {width: initial;}</style>");
     addParameter(_emonCMSserverAddressCParam);
     addParameter (_emonCMSserverPathCParam);
