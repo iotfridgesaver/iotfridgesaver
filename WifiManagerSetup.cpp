@@ -11,40 +11,34 @@
 #include "WifiManagerSetup.h"
 #ifdef WIFI_MANAGER
 
-extern const char *configFileName;
-
-//extern String emonCMSserverAddress;  ///< Dirección del servidor EmonCMS
-//extern String emonCMSwriteApiKey; 
-//extern int mainsVoltage;
-
 #define MAX_STRING_LENGTH 40  ///< Longitud máxima de los parámetros de usuario
-extern bool configLoaded;
 
 void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los parámetros específicos del proyecto
-    //resetSettings();
+    //resetSettings(); // No quitar el comentario, solo para desarrollo
+    if (_config.emonCMSserverAddress != "")
+        _emonCMSserverAddressCParam = new WiFiManagerParameter ("server", "EmonCMS server", _config.emonCMSserverAddress.c_str(), MAX_STRING_LENGTH);
+    else
+        _emonCMSserverAddressCParam = new WiFiManagerParameter ("server", "EmonCMS server", "cloud.iotfridgesaver.com", MAX_STRING_LENGTH);
 
-/*#ifdef DEBUG_ENABLED
-    Serial.printf ("emonCMSserverAddress1: %s\n", emonCMSserverAddress.c_str ());
-    Serial.printf ("emonCMSwriteApiKey1: %s\n", emonCMSwriteApiKey.c_str ());
-    Serial.printf ("mainsVoltage1: %d\n", mainsVoltage);
-#endif // DEBUG_ENABLED
+    if (_config.emonCMSserverPath != "")
+        _emonCMSserverPathCParam = new WiFiManagerParameter ("path", "EmonCMS server path", _config.emonCMSserverPath.c_str(), MAX_STRING_LENGTH);
+    else
+        _emonCMSserverPathCParam = new WiFiManagerParameter ("path", "EmonCMS server path", "/", MAX_STRING_LENGTH);
 
-    String serverName;
-    String apiKey;
-    String volt;*/
-        
-    /*if (configLoaded) {
-        serverName = emonCMSserverAddress;
-        apiKey = emonCMSwriteApiKey;
-        char * tempStr;
-        tempStr = itoa (mainsVoltage, tempStr, 10);
-        volt = tempStr;
-    } else {
-        serverName = "cloud.iotfridgesaver.com";
-        apiKey = "";
-        volt = "230";
-    }*/
-    
+    if (_config.emonCMSwriteApiKey != "")
+        _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", _config.emonCMSwriteApiKey.c_str(), MAX_STRING_LENGTH);
+    else
+        _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
+
+    if (_config.mainsVoltage > 0)
+        _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", String(_config.mainsVoltage).c_str() , 5);
+    else
+        _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
+
+    setConnectTimeout(WIFI_TIMEOUT);
+    if (_configLoaded) // Añadir timeout al portal de configuración solo si la carga de la configuración fue correcta
+        setConfigPortalTimeout (CONFIG_PORTAL_TIMEOUT);
+
     _emonCMSserverAddressCParam = new WiFiManagerParameter ("server", "EmonCMS server", "cloud.iotfridgesaver.com", MAX_STRING_LENGTH);
     _emonCMSserverPathCParam = new WiFiManagerParameter ("path", "EmonCMS server path", "/", MAX_STRING_LENGTH);
     _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
@@ -125,6 +119,14 @@ String MyWiFiManager::getEmonCMSwriteApiKey () {
 int MyWiFiManager::getMainsVoltage () {
     const char * charStr = _mainsVoltageCParam->getValue ();
     return atoi (charStr);
+}
+
+void MyWiFiManager::setConfig (config_t config, bool configLoaded) {
+    _config.emonCMSserverAddress = config.emonCMSserverAddress;
+    _config.emonCMSserverPath = config.emonCMSserverPath;
+    _config.emonCMSwriteApiKey = config.emonCMSwriteApiKey;
+    _config.mainsVoltage = config.mainsVoltage;
+    _configLoaded = configLoaded;
 }
 
 MyWiFiManager::MyWiFiManager() : WiFiManager () {}

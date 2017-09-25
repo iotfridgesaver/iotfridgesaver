@@ -45,6 +45,8 @@ protected:
 #endif // MQTT_POWER_INPUT
 #endif
 
+    config_t _config;
+    bool _configLoaded;
     /*String emonCMSserverAddress;
     String emonCMSwriteApiKey;
     int mainsVoltage;*/
@@ -63,6 +65,7 @@ public:
 #endif // MQTT_POWER_INPUT
 #endif
     int getMainsVoltage ();             ///< Obtiene la tensión configurada por el usuario
+    void setConfig (config_t config, bool configLoaded);
 };
 
 #endif WIFI_MANAGER
