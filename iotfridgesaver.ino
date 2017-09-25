@@ -129,6 +129,9 @@ int MaxValue (float *temperatures, uint8_t size);
 void sortSensors ();
 double getPower ();
 uint8_t initTempSensors ();
+#ifdef DEBUG_ENABLED
+void debugPrintf (uint8_t debugLevel, const char* format, ...);
+#endif // DEBUG_ENABLED
 #ifdef WIFI_MANAGER
 void configModeCallback ();
 void getCustomData (MyWiFiManager &wifiManager);
@@ -185,10 +188,14 @@ También se subscribe a los topics de consumo del frigorífico y de la vivienda
 void reconnect () {
     // Loop until we're reconnected
     while (!mqttClient.connected ()) {
+#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Attempting MQTT connection...");
+#endif // DEBUG_ENABLED
         // Attempt to connect
         if (mqttClient.connect ("IotFridgeSaver")) {
+#ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "connected\n");
+#endif // DEBUG_ENABLED
             // Once connected, publish an announcement...
             mqttClient.publish ("outTopic", "IotFridgeSaver/hello world");
             // ... and resubscribe
@@ -196,11 +203,13 @@ void reconnect () {
 #ifdef MQTT_POWER_INPUT
             mqttClient.subscribe (mqttFridgePowerTopic.c_str ());
             mqttClient.subscribe (mqttTotalPowerTopic.c_str ());
-#endif
+#endif // MQTT_POWER_INPUT
         } else {
+#ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "failed, rc=%d try again in 5 seconds\n", mqttClient.state ());
             // Wait 5 seconds before retrying
             delay (5000);
+#endif // DEBUG_ENABLED
         }
     }
 }
@@ -622,13 +631,17 @@ void getDailyAmbientAverage () {
 
 void processSyncEvent (NTPSyncEvent_t ntpEvent) {
     if (ntpEvent) {
+#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "%s Time Sync error: ", __FUNCTION__);
         if (ntpEvent == noResponse)
             debugPrintf (Debug.INFO, "NTP server not reachable\n");
         else if (ntpEvent == invalidAddress)
             debugPrintf (Debug.INFO, "Invalid NTP server address\n");
+#endif // DEBUG_ENABLED
     } else {
+#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "%s Got NTP time: %s\n", __FUNCTION__, NTP.getTimeDateString (NTP.getLastNTPSync ()).c_str());
+#endif // DEBUG_ENABLED
         timeChanged = true;
     }
 }
@@ -994,7 +1007,9 @@ void loop () {
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     if (mqttStarted) {
         if (!client.connected ()) {
+#ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "MQTT Reconnect");
+#endif // DEBUG_ENABLED
             reconnect ();
         }
         mqttClient.loop ();
