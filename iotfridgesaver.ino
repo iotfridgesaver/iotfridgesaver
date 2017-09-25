@@ -531,7 +531,7 @@ void setup () {
 
 #ifdef WIFI_MANAGER
     //leer datos de la flash
-    configFileName = "\config.json";
+    //configFileName = "\config.json";
     loadConfigData ();
 
     // Si no se han configurado los datos del servidor borrar la configuración
