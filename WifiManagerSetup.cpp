@@ -21,35 +21,13 @@ extern const char *configFileName;
 extern bool configLoaded;
 
 void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los parámetros específicos del proyecto
-    //resetSettings();
+    //resetSettings(); // No quitar el comentario, solo para desarrollo
 
-/*#ifdef DEBUG_ENABLED
-    Serial.printf ("emonCMSserverAddress1: %s\n", emonCMSserverAddress.c_str ());
-    Serial.printf ("emonCMSwriteApiKey1: %s\n", emonCMSwriteApiKey.c_str ());
-    Serial.printf ("mainsVoltage1: %d\n", mainsVoltage);
-#endif // DEBUG_ENABLED
-
-    String serverName;
-    String apiKey;
-    String volt;*/
-        
-    /*if (configLoaded) {
-        serverName = emonCMSserverAddress;
-        apiKey = emonCMSwriteApiKey;
-        char * tempStr;
-        tempStr = itoa (mainsVoltage, tempStr, 10);
-        volt = tempStr;
-    } else {
-        serverName = "cloud.iotfridgesaver.com";
-        apiKey = "";
-        volt = "230";
-    }*/
-    
     _emonCMSserverAddressCParam = new WiFiManagerParameter ("server", "EmonCMS server", "cloud.iotfridgesaver.com", MAX_STRING_LENGTH);
     _emonCMSserverPathCParam = new WiFiManagerParameter ("path", "EmonCMS server path", "/", MAX_STRING_LENGTH);
     _emonCMSwriteApiKeyCParam = new WiFiManagerParameter ("apikey", "EmonCMS API key", "", MAX_STRING_LENGTH);
     _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
-    setConnectTimeout(30);
+    setConnectTimeout(WIFI_TIMEOUT);
     //setCustomHeadElement("<style>input[type='checkbox'] {width: initial;}</style>");
     addParameter(_emonCMSserverAddressCParam);
     addParameter (_emonCMSserverPathCParam);

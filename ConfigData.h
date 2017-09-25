@@ -16,7 +16,7 @@
 #endif // DEBUG_ENABLED
 
 #define WIFI_MANAGER    ///<\~Spanish Activa la configuración con WiFiManager
-
+#define WIFI_TIMEOUT        30      ///<\~Spanish Timeout en segundos para conectar a la red WiFi
 #define FAN_ENABLE_BUTTON   D3      ///<\~Spanish Pin donde conectar el botón para activar el ventilador
 #define FAN_PWM_PIN         D1      ///<\~Spanish Pin para el control de la velocidad del ventilador
 #define MEASURE_PERIOD      60000   ///<\~Spanish Periodo de medida de temperatura y consumo en milisegundos, y envío de los datos al servicio en la nube

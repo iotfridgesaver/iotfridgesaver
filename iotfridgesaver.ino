@@ -346,8 +346,7 @@ void getCustomData (MyWiFiManager &wifiManager) {
 Inicia el sistema de archivos si éste es incorrecto.
 */
 void loadConfigData () {
-    //clean FS, for testing
-    //SPIFFS.format();
+    //SPIFFS.format();     // Borra el sistema de archivos, solo para pruebas
 
     //read configuration from FS json
 #ifdef DEBUG_ENABLED
@@ -398,7 +397,8 @@ void loadConfigData () {
 
                     //strcpy (mqtt_port, json["mqtt_port"]);
                     //strcpy (blynk_token, json["blynk_token"]);
-                    configLoaded = true;
+                    if (emonCMSserverAddress != "" && emonCMSwriteApiKey != "")
+                        configLoaded = true;
                 } 
 #ifdef DEBUG_ENABLED
                 else {
