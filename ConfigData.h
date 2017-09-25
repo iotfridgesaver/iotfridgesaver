@@ -10,6 +10,8 @@
 #ifndef _CONFIGDATA_h
 #define _CONFIGDATA_h
 
+#include <Arduino.h>
+
 #define DEBUG_ENABLED   ///<\~Spanish Activa la salida de debug por Telnet
 #ifdef DEBUG_ENABLED
 #define DEBUG_SERIAL    ///<\~Spanish Activa la salida de debug por puerto serie
@@ -26,6 +28,11 @@ const int t_longPress =     10000;   ///<\~Spanish Tiempo en milisegundos para i
 
 const int fanThreshold =    60;     ///<\~Spanish Valor en vatios por encima del cual se enciende el ventilador
 
-
+typedef struct {
+    String emonCMSserverAddress;       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
+    String emonCMSserverPath;          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
+    String emonCMSwriteApiKey;         ///<\~Spanish API key del usuario
+    int mainsVoltage;                 ///<\~Spanish Tensión de alimentación
+} config_t;
 
 #endif

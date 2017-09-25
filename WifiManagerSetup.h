@@ -35,6 +35,8 @@ protected:
     WiFiManagerParameter * _emonCMSserverPathCParam;
     WiFiManagerParameter * _emonCMSwriteApiKeyCParam;
     WiFiManagerParameter * _mainsVoltageCParam;
+    config_t _config;
+    bool _configLoaded;
     /*String emonCMSserverAddress;
     String emonCMSwriteApiKey;
     int mainsVoltage;*/
@@ -45,6 +47,7 @@ public:
     String getEmonCMSserverPath ();     ///< Obtiene la ruta del servidor de EmonCMS
     String getEmonCMSwriteApiKey ();    ///< Obtiene la clave API del usuario
     int getMainsVoltage ();             ///< Obtiene la tensión configurada por el usuario
+    void setConfig (config_t config, bool configLoaded);
 };
 
 #endif WIFI_MANAGER

@@ -78,21 +78,27 @@ int fanSpeed = 0;                       ///<\~Spanish Velocidad del ventilador
 bool shouldSaveConfig = false;          ///<\~Spanish Verdadero si WiFi Manager activa una configuración nueva
 bool configLoaded = false;              ///<\~Spanish Indica si se ha cargado la configuración de la flash. Sin uso actualmente
 
-#ifndef WIFI_MANAGER
+#ifdef WIFI_MANAGER
+MyWiFiManager wifiManager;              // WiFi Manager. Configura los datos WiFi y otras configuraciones
+const char * configFileName = "config.json";  ///<\~Spanish Nombre del archivo de configuración que se genera en la flash
+#else
 const char* WIFI_SSID = "NOMBRE_DE_MI_RED"; ///<\~Spanish Nombre de la red WiFi. Solo si no se usa WiFiManager
 const char* WIFI_PASS = "CONTRASEÑA";       ///<\~Spanish Contraseña de la red WiFi. Solo si no se usa WiFiManager
-String emonCMSserverAddress = "SERVIDOR_EMONCMS";       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
-String emonCMSserverPath = "RUTA_EMONCMS";          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
-String emonCMSwriteApiKey = "CLAVE_API_EMONCMS";         ///<\~Spanish API key del usuario
-int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
-#else
-String emonCMSserverAddress = "";       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
-String emonCMSserverPath = "";          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
-String emonCMSwriteApiKey = "";         ///<\~Spanish API key del usuario
-int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
-const char *configFileName = "config.json"; ///<\~Spanish Nombre del archivo de configuración que se genera en la flash
-MyWiFiManager wifiManager;              // WiFi Manager. Configura los datos WiFi y otras configuraciones
 #endif // WIFI_MANAGER
+
+config_t config = { ///<\~Spanish Configuración del dispositivo
+#ifndef WIFI_MANAGER
+    "SERVIDOR_EMONCMS", // emonCMSserverAddress
+    "RUTA_EMONCMS",     // emonCMSserverPath
+    "CLAVE_API_EMONCMS",// emonCMSwriteApiKey
+    230                 // mainsVoltage
+#else
+    "",                 // emonCMSserverAddress
+    "",                 // emonCMSserverPath
+    "",                 // emonCMSwriteApiKey
+    230,                // mainsVoltage
+#endif // WIFI_MANAGER
+};
 
 int MaxValue (float *temperatures, uint8_t size);
 void sortSensors ();
@@ -230,7 +236,7 @@ double getPower () {
     double watts;
 
 #ifdef EMONLIB
-    watts = emon1.calcIrms (1480) * mainsVoltage;  // Calculate Irms * V. Aparent power
+    watts = emon1.calcIrms (1480) * config.mainsVoltage;  // Calculate Irms * V. Aparent power
 #endif // EMONLIB
 
 #ifdef EMONLIB 
@@ -317,25 +323,20 @@ Si hay un error reinicia el dispositivo
 */
 void getCustomData (MyWiFiManager &wifiManager) {
     //	Obtener datos de WifiManager
-    emonCMSserverAddress = wifiManager.getEmonCMSserverAddress ();
-    emonCMSserverPath = wifiManager.getEmonCMSserverPath ();
-    emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
-    mainsVoltage = wifiManager.getMainsVoltage ();
+    config.emonCMSserverAddress = wifiManager.getEmonCMSserverAddress ();
+    config.emonCMSserverPath = wifiManager.getEmonCMSserverPath ();
+    config.emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
+    config.mainsVoltage = wifiManager.getMainsVoltage ();
 
 #ifdef DEBUG_ENABLED
-    debugPrintf (Debug.INFO, "Servidor: %s\n", emonCMSserverAddress.c_str ());
-    debugPrintf (Debug.INFO, "Ruta: %s\n", emonCMSserverPath.c_str ());
-    debugPrintf (Debug.INFO, "API Key: %s\n", emonCMSwriteApiKey.c_str ());
-    debugPrintf (Debug.INFO, "Tensión: %d\n", mainsVoltage);
+    debugPrintf (Debug.INFO, "Servidor: %s\n", config.emonCMSserverAddress.c_str ());
+    debugPrintf (Debug.INFO, "Ruta: %s\n", config.emonCMSserverPath.c_str ());
+    debugPrintf (Debug.INFO, "API Key: %s\n", config.emonCMSwriteApiKey.c_str ());
+    debugPrintf (Debug.INFO, "Tensión: %d\n", config.mainsVoltage);
 #endif // DEBUG_ENABLED
 
-    if (mainsVoltage == 0) {
-#ifdef DEBUG_ENABLED
-        debugPrintf (Debug.INFO, "ERROR. Tensión debe ser un número\n");
-#endif // DEBUG_ENABLED
-        wifiManager.resetSettings ();
-        delay (1000);
-        ESP.reset ();
+    if (config.mainsVoltage == 0) {
+        config.mainsVoltage = 230;
     }
 
 }
@@ -383,21 +384,21 @@ void loadConfigData () {
                     debugPrintf (Debug.INFO, "\nparsed json\n");
 #endif // DEBUG_ENABLED
 
-                    emonCMSserverAddress = json.get<String> ("emonCMSserver");
-                    emonCMSserverPath = json.get<String> ("emonCMSpath");
-                    emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
-                    mainsVoltage = json.get<int> ("mainsVoltage");
+                    config.emonCMSserverAddress = json.get<String> ("emonCMSserver");
+                    config.emonCMSserverPath = json.get<String> ("emonCMSpath");
+                    config.emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
+                    config.mainsVoltage = json.get<int> ("mainsVoltage");
 
 #ifdef DEBUG_ENABLED
-                    debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
-                    debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
-                    debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
-                    debugPrintf (Debug.INFO, "mainsVoltage: %d\n", mainsVoltage);
+                    debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", config.emonCMSserverAddress.c_str ());
+                    debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", config.emonCMSserverPath.c_str ());
+                    debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", config.emonCMSwriteApiKey.c_str ());
+                    debugPrintf (Debug.INFO, "mainsVoltage: %d\n", config.mainsVoltage);
 #endif // DEBUG_ENABLED
 
                     //strcpy (mqtt_port, json["mqtt_port"]);
                     //strcpy (blynk_token, json["blynk_token"]);
-                    if (emonCMSserverAddress != "" && emonCMSwriteApiKey != "")
+                    if (config.emonCMSserverAddress != "" && config.emonCMSwriteApiKey != "")
                         configLoaded = true;
                 } 
 #ifdef DEBUG_ENABLED
@@ -441,10 +442,10 @@ void saveConfigData () {
     if (SPIFFS.begin ()) {
         DynamicJsonBuffer jsonBuffer;
         JsonObject& json = jsonBuffer.createObject ();
-        json["emonCMSserver"] = emonCMSserverAddress;
-        json["emonCMSpath"] = emonCMSserverPath;
-        json["emonCMSapiKey"] = emonCMSwriteApiKey;
-        json["mainsVoltage"] = mainsVoltage;
+        json["emonCMSserver"] = config.emonCMSserverAddress;
+        json["emonCMSpath"] = config.emonCMSserverPath;
+        json["emonCMSapiKey"] = config.emonCMSwriteApiKey;
+        json["mainsVoltage"] = config.mainsVoltage;
 
         File configFile = SPIFFS.open (configFileName, "w");
         if (!configFile) {
@@ -475,6 +476,7 @@ void saveConfigData () {
 void startWifiManager (MyWiFiManager &wifiManager) {
 
     wifiManager.setSaveConfigCallback (configModeCallback);
+    wifiManager.setConfig (config, configLoaded);
     wifiManager.init ();
 }
 #endif //WIFI_MANAGER
@@ -531,11 +533,10 @@ void setup () {
 
 #ifdef WIFI_MANAGER
     //leer datos de la flash
-    //configFileName = "\config.json";
     loadConfigData ();
 
     // Si no se han configurado los datos del servidor borrar la configuración
-    if (emonCMSserverAddress == "" || emonCMSserverPath == "" || emonCMSwriteApiKey == "") {
+    if (config.emonCMSserverAddress == "" || config.emonCMSserverPath == "" || config.emonCMSwriteApiKey == "") {
         wifiManager.resetSettings ();
     }
 
@@ -570,10 +571,10 @@ void setup () {
 #ifdef DEBUG_ENABLED
     Debug.begin ("IoTFridgeSaver");
 
-    debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
-    debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
-    debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
-    debugPrintf (Debug.INFO, "mainsVoltage: %d\n", mainsVoltage);
+    debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", config.emonCMSserverAddress.c_str ());
+    debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", config.emonCMSserverPath.c_str ());
+    debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", config.emonCMSwriteApiKey.c_str ());
+    debugPrintf (Debug.INFO, "mainsVoltage: %d\n", config.mainsVoltage);
 #endif // DEBUG_ENABLED
 
     MDNS.begin ("FridgeSaverMonitor"); //Iniciar servidor MDNS para llamar al dispositivo como FridgeSaverMonitor.local
@@ -640,15 +641,15 @@ int8_t sendDataEmonCMS (float tempRadiator,
     char tempStr[10]; // Cadena temporal para almacenar los numeros como texto
 
     // Conecta al servidor
-    if (!client.connect (emonCMSserverAddress.c_str (), 443)) {
+    if (!client.connect (config.emonCMSserverAddress.c_str (), 443)) {
 #ifdef DEBUG_ENABLED
-        debugPrintf (Debug.INFO, "Error al conectar al servidor EmonCMS en %s\n", emonCMSserverAddress.c_str ());
+        debugPrintf (Debug.INFO, "Error al conectar al servidor EmonCMS en %s\n", config.emonCMSserverAddress.c_str ());
 #endif
         return -1; // Error de conexión
     }
 
     // Compone la peticion HTTP
-    String httpRequest = "GET "+ emonCMSserverPath +"/input/post.json?node=IoTFridgeSaver&fulljson={";
+    String httpRequest = "GET "+ config.emonCMSserverPath +"/input/post.json?node=IoTFridgeSaver&fulljson={";
     dtostrf (tempRadiator, 3, 3, tempStr);
     httpRequest += "\"tempRadiator\":" + String (tempStr) + ",";
     dtostrf (tempAmbient, 3, 3, tempStr);
@@ -662,8 +663,8 @@ int8_t sendDataEmonCMS (float tempRadiator,
     dtostrf (totalWatts, 3, 3, tempStr);
     httpRequest += "\"house_watts\":" + String (tempStr) + ",";
     httpRequest += "\"fan\":" + String(fanOn);
-    httpRequest += "}&apikey=" + emonCMSwriteApiKey + " HTTP/1.1\r\n";
-    httpRequest += "Host: " + emonCMSserverAddress + "\r\n\r\n";
+    httpRequest += "}&apikey=" + config.emonCMSwriteApiKey + " HTTP/1.1\r\n";
+    httpRequest += "Host: " + config.emonCMSserverAddress + "\r\n\r\n";
 
 #ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
