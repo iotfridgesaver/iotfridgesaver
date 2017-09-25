@@ -138,7 +138,7 @@ void startWifiManager (MyWiFiManager &wifiManager);
 void long_click ();
 #endif // WIFI_MANAGER
 void button_click ();
-int8_t sendDataEmonCMS (float tempRadiator, float tempAmbient, float tempFridge, float tempFreezer, double watts, double totalWatts, int fanOn);
+int8_t sendDataEmonCMS (float tempRadiator, float tempAmbient, float tempFridge, float tempFreezer, double watts, double totalWatts, int fanOn, float aveTempAmbient = -100);
 
 
 #ifdef DEBUG_ENABLED
@@ -832,7 +832,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         double watts,
                         double totalWatts,
                         int fanOn,
-                        float aveTempAmbient = -100) {
+                        float aveTempAmbient) {
 
     WiFiClientSecure client; // Cliente TCP con SSL
     const unsigned int maxTimeout = 5000; // Tiempo maximo de espera a la respuesta del servidor
