@@ -18,7 +18,6 @@
 * @section intro Introducción
 */
 
-#include "AverageCalculator.h"
 #include "ConfigData.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -37,14 +36,7 @@
 #include <RemoteDebug.h>
 #endif // DEBUG_ENABLED
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <Arduino.h>
-
-#include <NtpClientLib.h>
-#include <TimeAlarms.h>
+//#include <NtpClientLib.h>
 
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
@@ -127,12 +119,6 @@ config_t config = { ///<\~Spanish Configuración del dispositivo
 #endif // WIFI_MANAGER
 };
 
-TimeAlarmsClass alarmDaily;
-AverageCalculator ambientAverage;
-bool sendAverage = false;
-bool timeChanged = false;
-AlarmID_t alarmID;
-
 int MaxValue (float *temperatures, uint8_t size);
 void sortSensors ();
 double getPower ();
@@ -149,7 +135,7 @@ void startWifiManager (MyWiFiManager &wifiManager);
 void long_click ();
 #endif // WIFI_MANAGER
 void button_click ();
-int8_t sendDataEmonCMS (float tempRadiator, float tempAmbient, float tempFridge, float tempFreezer, double watts, double totalWatts, int fanOn, float aveTempAmbient = -100);
+int8_t sendDataEmonCMS (float tempRadiator, float tempAmbient, float tempFridge, float tempFreezer, double watts, double totalWatts, int fanOn);
 
 
 #ifdef DEBUG_ENABLED
@@ -628,12 +614,7 @@ void long_click () {
 }
 #endif // WIFI_MANAGER
 
-void getDailyAmbientAverage () {
-        aveTemperatures[tempAmbient_idx] = ambientAverage.reset ();
-        sendAverage = true;
-}
-
-void processSyncEvent (NTPSyncEvent_t ntpEvent) {
+/*void processSyncEvent (NTPSyncEvent_t ntpEvent) {
     if (ntpEvent) {
 #ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "%s Time Sync error: ", __FUNCTION__);
@@ -648,7 +629,7 @@ void processSyncEvent (NTPSyncEvent_t ntpEvent) {
 #endif // DEBUG_ENABLED
         timeChanged = true;
     }
-}
+}*/
 
 #ifdef MQTT_POWER_INPUT
 /**
@@ -754,7 +735,7 @@ void setup () {
 
     Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
-    NTP.begin ("es.pool.ntp.org", 1, true);
+    //NTP.begin ("es.pool.ntp.org", 1, true);
 
 #ifdef DEBUG_ENABLED
     Debug.begin ("IoTFridgeSaver");
@@ -817,13 +798,7 @@ void setup () {
 #endif
     sortSensors (); // Asignar los sensores automáticamente
 
-#ifndef TEST
-    Alarm.alarmRepeat (0, 0, 1, getDailyAmbientAverage);
-#else
-    Alarm.alarmRepeat (10, 21, 1, getDailyAmbientAverage);
-#endif
-
-    NTP.onNTPSyncEvent (processSyncEvent);
+    //NTP.onNTPSyncEvent (processSyncEvent);
 }
 
 /**
@@ -847,8 +822,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         float tempFreezer, 
                         double watts,
                         double totalWatts,
-                        int fanOn,
-                        float aveTempAmbient) {
+                        int fanOn) {
 
     WiFiClientSecure client; // Cliente TCP con SSL
     const unsigned int maxTimeout = 5000; // Tiempo maximo de espera a la respuesta del servidor
@@ -929,19 +903,9 @@ void loop () {
 
     ArduinoOTA.handle ();
     button.tick ();
-    Alarm.delay (0);
 #ifdef DEBUG_ENABLED
     Debug.handle ();
 #endif // DEBUG_ENABLED
-
-    if (timeChanged) {
-#ifndef TEST
-        alarmID = Alarm.alarmRepeat (0, 0, 1, getDailyAmbientAverage);
-#else
-        alarmID = Alarm.alarmRepeat (16, 46, 0, getDailyAmbientAverage);
-#endif
-        timeChanged = false;
-    }
 
     if (millis () - lastRun > MEASURE_PERIOD) {
         lastRun = millis ();
@@ -951,7 +915,6 @@ void loop () {
         sensors.requestTemperatures ();
         temperatures[tempRadiator_idx] = sensors.getTempCByIndex (tempRadiator_idx);
         temperatures[tempAmbient_idx] = sensors.getTempCByIndex (tempAmbient_idx);
-        ambientAverage.feed (temperatures[tempAmbient_idx]);
         temperatures[tempFridge_idx] = sensors.getTempCByIndex (tempFridge_idx);
         temperatures[tempFreezer_idx] = sensors.getTempCByIndex (tempFreezer_idx);
 #ifdef EMONLIB
@@ -979,31 +942,16 @@ void loop () {
         debugPrintf (Debug.INFO, "Consumo total: %f\n", houseWatts);
 #endif // DEBUG_ENABLED
         
-        if (sendAverage) {
-            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed, aveTemperatures[tempAmbient_idx]);
+        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
 #ifdef MQTT_FEED_SEND
-            mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/tempAmbient_ave", String (aveTemperatures[tempAmbient_idx]).c_str (), true);
-            mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
-            mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
-            mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
+        mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str());
+        mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
+        mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
+        mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
+        mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
+        mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
+        mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
 #endif // MQTT_FEED_SEND
-            sendAverage = false;
-        } else {
-            sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
-#ifdef MQTT_FEED_SEND
-            mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str());
-            mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
-            mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
-            mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
-            mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
-#endif // MQTT_FEED_SEND
-        }
 
     }
 
