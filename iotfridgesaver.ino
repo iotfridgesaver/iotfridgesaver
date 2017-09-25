@@ -27,8 +27,10 @@
 #include <ArduinoJson.h>
 #include "FS.h"
 #include "OTAhelper.h"
+#ifdef WIFI_MANAGER
 #include "WifiManagerSetup.h"
 #include <WiFiManager.h>
+#endif // WIFI_MANAGER
 #include <OneButton.h>
 #include <RemoteDebug.h>
 
@@ -72,11 +74,20 @@ int fanSpeed = 0;                       ///<\~Spanish Velocidad del ventilador
 bool shouldSaveConfig = false;          ///<\~Spanish Verdadero si WiFi Manager activa una configuración nueva
 bool configLoaded = false;              ///<\~Spanish Indica si se ha cargado la configuración de la flash. Sin uso actualmente
 
+#ifndef WIFI_MANAGER
+const char* WIFI_SSID = "NOMBRE_DE_MI_RED"; ///<\~Spanish Nombre de la red WiFi. Solo si no se usa WiFiManager
+const char* WIFI_PASS = "CONTRASEÑA";       ///<\~Spanish Contraseña de la red WiFi. Solo si no se usa WiFiManager
+String emonCMSserverAddress = "SERVIDOR_EMONCMS";       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
+String emonCMSserverPath = "RUTA_EMONCMS";          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
+String emonCMSwriteApiKey = "CLAVE_API_EMONCMS";         ///<\~Spanish API key del usuario
+int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
+#else
 String emonCMSserverAddress = "";       ///<\~Spanish Dirección del servidor Web que aloja a EmonCMS
 String emonCMSserverPath = "";          ///<\~Spanish Ruta del servicio EmonCMS en el servidor Web
 String emonCMSwriteApiKey = "";         ///<\~Spanish API key del usuario
 int mainsVoltage = 230;                 ///<\~Spanish Tensión de alimentación
 const char *configFileName = "config.json"; ///<\~Spanish Nombre del archivo de configuración que se genera en la flash
+#endif // WIFI_MANAGER
 
 /**
 @brief Envuelve la función Debug.printf para ayudar al deshabilitar la salida de debug.
@@ -322,7 +333,6 @@ void loadConfigData () {
                     debugPrintf (Debug.INFO, "\nparsed json\n");
 #endif // DEBUG_ENABLED
 
-                    //strcpy (mqtt_server, json["mqtt_server"]);
                     emonCMSserverAddress = json.get<String> ("emonCMSserver");
                     emonCMSserverPath = json.get<String> ("emonCMSpath");
                     emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
@@ -449,7 +459,9 @@ void long_click () {
 #endif // WIFI_MANAGER
 
 void setup () {
+#ifdef WIFI_MANAGER
     MyWiFiManager wifiManager;              // WiFi Manager. Configura los datos WiFi y otras configuraciones
+#endif // WIFI_MANAGER
 
     Serial.begin (115200);
     // Control del ventilador y pequeño "aceleron"
@@ -458,8 +470,10 @@ void setup () {
     analogWrite (FAN_PWM_PIN, 0); // D1 = GPIO5. Pin PWM para controlar el ventilador
    
     button.attachClick (button_click);
+#ifdef WIFI_MANAGER
     button.setPressTicks (t_longPress);
     button.attachPress (long_click);
+#endif // WIFI_MANAGER
 
 #ifdef DEBUG_SERIAL
     Debug.setSerialEnabled (true);
