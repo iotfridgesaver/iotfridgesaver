@@ -48,7 +48,8 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
         _mainsVoltageCParam = new WiFiManagerParameter ("voltage", "Mains voltage", "230", 5);
 
     setConnectTimeout(WIFI_TIMEOUT);
-    setConfigPortalTimeout (CONFIG_PORTAL_TIMEOUT);
+    if (configLoaded) // Añadir timeout al portal de configuración solo si la carga de la configuración fue correcta
+        setConfigPortalTimeout (CONFIG_PORTAL_TIMEOUT);
     //setCustomHeadElement("<style>input[type='checkbox'] {width: initial;}</style>");
     addParameter(_emonCMSserverAddressCParam);
     addParameter (_emonCMSserverPathCParam);
