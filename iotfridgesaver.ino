@@ -29,14 +29,22 @@
 #include "FS.h"
 #include "OTAhelper.h"
 #ifdef WIFI_MANAGER
-#include "WifiManagerSetup.h"
 #include <WiFiManager.h>
+#include "WifiManagerSetup.h"
 #endif // WIFI_MANAGER
 #include <OneButton.h>
+#ifdef DEBUG_ENABLED
+#include <RemoteDebug.h>
+#endif // DEBUG_ENABLED
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <Arduino.h>
 
 #include <NtpClientLib.h>
 #include <TimeAlarms.h>
-#include <RemoteDebug.h>
 
 #ifdef EMONLIB
 #include "EmonLib.h"                    // https://github.com/openenergymonitor/EmonLib
@@ -49,7 +57,9 @@ PubSubClient mqttClient (client);
 #endif
 
 bool OTAupdating;                       ///<\~Spanish Verdadero si se está haciendo una actualización OTA
+#ifdef DEBUG_ENABLED
 RemoteDebug Debug;                      ///<\~Spanish Remote debug telnet server instance
+#endif // DEBUG_ENABLED
 
 #define NUMBER_OF_SENSORS 4             ///<\~English Number of expected temp sensors \~Spanish Número de sensores esperados 
 float temperatures[NUMBER_OF_SENSORS];  ///<\~Spanish Espacio para almacenar los valores de temperatura
@@ -106,6 +116,7 @@ String mqttTotalPowerTopic = "";        ///<\~Spanish Topic del consumo total de
 bool mqttStarted = false;               ///<\~Spanish Tensión de alimentación
 #endif
 const char *configFileName = "config.json"; ///<\~Spanish Nombre del archivo de configuración que se genera en la flash
+MyWiFiManager wifiManager;              // WiFi Manager. Configura los datos WiFi y otras configuraciones
 #endif // WIFI_MANAGER
 
 TimeAlarmsClass alarmDaily;
@@ -114,6 +125,23 @@ bool sendAverage = false;
 bool timeChanged = false;
 AlarmID_t alarmID;
 
+int MaxValue (float *temperatures, uint8_t size);
+void sortSensors ();
+double getPower ();
+uint8_t initTempSensors ();
+#ifdef WIFI_MANAGER
+void configModeCallback ();
+void getCustomData (MyWiFiManager &wifiManager);
+void loadConfigData ();
+void saveConfigData ();
+void startWifiManager (MyWiFiManager &wifiManager);
+void long_click ();
+#endif // WIFI_MANAGER
+void button_click ();
+int8_t sendDataEmonCMS (float tempRadiator, float tempAmbient, float tempFridge, float tempFreezer, double watts, double totalWatts, int fanOn);
+
+
+#ifdef DEBUG_ENABLED
 /**
 @brief Envuelve la función Debug.printf para ayudar al deshabilitar la salida de debug.
 
@@ -146,6 +174,7 @@ void debugPrintf (uint8_t debugLevel, const char* format, ...) {
         //Debug.printf (format, argptr);
     }
 }
+#endif // DEBUG_ENABLED
 
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
 /**
@@ -252,6 +281,34 @@ void sortSensors () {
 
 
 }
+
+/**
+@brief Obtiene la medida de consumo en Vatios
+
+@returns Valor de la medida en Vatios, en formato double
+*/
+double getPower () {
+    double watts;
+
+#ifdef EMONLIB
+    watts = emon1.calcIrms (1480) * mainsVoltage;  // Calculate Irms * V. Aparent power
+#endif // EMONLIB
+
+#if defined EMONLIB || defined MQTT_POWER_INPUT
+    if (fanEnabled && watts > fanThreshold) { // Si el consumo > 60W
+#else
+    if (fanEnabled) {
+#endif // EMONLIB
+        analogWrite (FAN_PWM_PIN, 850); // Encender ventilador
+        fanSpeed = 850;
+    } else {
+        analogWrite (FAN_PWM_PIN, 0);
+        fanSpeed = 0;
+    }
+
+    return watts;
+}
+
 
 
 /**
@@ -616,10 +673,6 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
 *  Setup
 ***********************************************/
 void setup () {
-#ifdef WIFI_MANAGER
-    MyWiFiManager wifiManager;              // WiFi Manager. Configura los datos WiFi y otras configuraciones
-#endif // WIFI_MANAGER
-
     Serial.begin (115200);
     // Control del ventilador y pequeño "aceleron"
     analogWrite (FAN_PWM_PIN, 900); // D1 = GPIO5. Pin PWM para controlar el ventilador
@@ -631,16 +684,17 @@ void setup () {
     button.setPressTicks (t_longPress);
     button.attachPress (long_click);
 #endif // WIFI_MANAGER
-
+#ifdef DEBUG_ENABLED
 #ifdef DEBUG_SERIAL
     Debug.setSerialEnabled (true);
 #else
     Debug.showColors (true); // Habilita los colores si la salida no es Serie, ya que no funciona bien.
 #endif // DEBUG_SERIAL
+#endif // DEBUG_ENABLED
 
 #ifdef WIFI_MANAGER
     //leer datos de la flash
-    configFileName = "\config.json";
+    //configFileName = "\config.json";
     loadConfigData ();
 
     // Si no se han configurado los datos del servidor borrar la configuración
@@ -669,17 +723,21 @@ void setup () {
     //--------------------- Conectar a la red WiFi -------------------------
     WiFi.begin (WIFI_SSID, WIFI_PASS);
 
+#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Conectando a la red %s ", WIFI_SSID);
+#endif // DEBUG_ENABLED
 
     while (!WiFi.isConnected ()) {
+#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, ".");
         delay (500);
+#endif // DEBUG_ENABLED
     }
     //----------------------------------------------------------------------
 #endif // WIFI_MANAGER
     Debug.begin ("IoTFridgeSaver");
     
-    debugPrintf (Debug.INFO, "Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
+    Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
     NTP.begin ("es.pool.ntp.org", 1, true);
 
@@ -731,9 +789,11 @@ void setup () {
 #endif // DEBUG_ENABLED
             //ArduinoOTA.handle ();
             button.tick ();
+#ifdef DEBUG_ENABLED
             Debug.handle ();
-
+#endif // DEBUG_ENABLED
             delay (500);
+
         }
     }
 
@@ -747,34 +807,6 @@ void setup () {
 #endif
 
     NTP.onNTPSyncEvent (processSyncEvent);
-}
-
-/**
-@brief Obtiene la medida de consumo en Vatios
-
-@returns Valor de la medida en Vatios, en formato double
-*/
-double getPower () {
-    double watts;
-
-#ifdef EMONLIB
-    watts = emon1.calcIrms (1480) * mainsVoltage;  // Calculate Irms * V. Aparent power
-#endif
-
-#if defined EMONLIB || defined MQTT_POWER_INPUT
-    //fanEnabled = digitalRead (FAN_ENABLE_BUTTON);
-    if (fanEnabled && watts > fanThreshold) { // Si el consumo > 60W
-#else
-    if (fanEnabled) {
-#endif
-        analogWrite (FAN_PWM_PIN, 850); // Encender ventilador
-        fanSpeed = 850;
-    } else {
-        analogWrite (FAN_PWM_PIN, 0);
-        fanSpeed = 0;
-    }
-
-    return watts;
 }
 
 /**
@@ -881,7 +913,9 @@ void loop () {
     ArduinoOTA.handle ();
     button.tick ();
     Alarm.delay (0);
+#ifdef DEBUG_ENABLED
     Debug.handle ();
+#endif // DEBUG_ENABLED
 
     if (timeChanged) {
 #ifndef TEST

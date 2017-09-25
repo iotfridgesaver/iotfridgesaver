@@ -1,4 +1,3 @@
-#ifdef WIFI_MANAGER
 
 /**
 * @file WifiManagerSetup.cpp
@@ -8,7 +7,10 @@
 * \~Spanish
 * @brief Definición de métodos para la clase WiFiManager.
 */
+#include "ConfigData.h"
 #include "WifiManagerSetup.h"
+#ifdef WIFI_MANAGER
+
 extern const char *configFileName;
 
 //extern String emonCMSserverAddress;  ///< Dirección del servidor EmonCMS
