@@ -568,6 +568,8 @@ void setup () {
     Serial.printf ("Conectado!!! IP: %s\n", WiFi.localIP ().toString ().c_str ());
 
 #ifdef DEBUG_ENABLED
+    Debug.begin ("IoTFridgeSaver");
+
     debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", emonCMSserverAddress.c_str ());
     debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", emonCMSserverPath.c_str ());
     debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", emonCMSwriteApiKey.c_str ());
