@@ -68,6 +68,6 @@ public:
     void setConfig (config_t config, bool configLoaded);
 };
 
-#endif WIFI_MANAGER
+#endif //WIFI_MANAGER
 #endif
 
