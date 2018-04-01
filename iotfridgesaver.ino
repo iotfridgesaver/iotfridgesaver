@@ -149,6 +149,8 @@ void debugPrintf (uint8_t debugLevel, const char* format, ...) {
         //Debug.printf (format, argptr);
     }
 }
+#else
+#define debugPrintf(...)
 #endif // DEBUG_ENABLED
 
 /**
@@ -214,16 +216,11 @@ void sortSensors () {
     max_i = MaxValue (temperatures, NUMBER_OF_SENSORS);
     tempFreezer_idx = max_i;
     //  temperatures[max_i]= minTemperature;
-
-
-#ifdef DEBUG_ENABLED
+    
     debugPrintf (Debug.INFO, "Posicion sensor radiador: %d\n", tempRadiator_idx);
     debugPrintf (Debug.INFO, "Posicion sensor ambiente: %d\n", tempAmbient_idx);
     debugPrintf (Debug.INFO, "Posicion sensor frigorifico: %d\n", tempFridge_idx);
     debugPrintf (Debug.INFO, "Posicion sensor congelador: %d\n", tempFreezer_idx);
-
-#endif
-
 
 }
 
@@ -265,9 +262,7 @@ uint8_t initTempSensors () {
     DeviceAddress tempDeviceAddress;    // Almacenamiento temporal para las direcciones encontradas
     uint8_t numberOfDevices;            // Número de sensores encontrados
 
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Init Dallas Temperature Control Library\n");
-#endif
 
     // Inicializar el bus de los sensores de temperatura 
     sensors.begin ();
@@ -275,10 +270,8 @@ uint8_t initTempSensors () {
     // Preguntar por el número de sensores detectados
     numberOfDevices = sensors.getDeviceCount ();
 
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Locating devices...Found %u devices.\n", numberOfDevices);
     debugPrintf (Debug.INFO, "Parasite power is: %s\n", sensors.isParasitePowerMode ()?"ON":"OFF");
-#endif
 
     // Ajustar la precisión de todos los sensores
     sensors.setResolution (TEMPERATURE_PRECISION);
@@ -307,9 +300,7 @@ uint8_t initTempSensors () {
 Activa la bandera que controla el inicio el almacenamiento de la configuración personalizada en la memoria flash, en el sistema de archivos SPIFFS
 */
 void configModeCallback () {
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "%s: Guardar configuración\n", __FUNCTION__);
-#endif // DEBUG_ENABLED
     shouldSaveConfig = true;
 }
 
@@ -328,12 +319,10 @@ void getCustomData (MyWiFiManager &wifiManager) {
     config.emonCMSwriteApiKey = wifiManager.getEmonCMSwriteApiKey ();
     config.mainsVoltage = wifiManager.getMainsVoltage ();
 
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Servidor: %s\n", config.emonCMSserverAddress.c_str ());
     debugPrintf (Debug.INFO, "Ruta: %s\n", config.emonCMSserverPath.c_str ());
     debugPrintf (Debug.INFO, "API Key: %s\n", config.emonCMSwriteApiKey.c_str ());
     debugPrintf (Debug.INFO, "Tensión: %d\n", config.mainsVoltage);
-#endif // DEBUG_ENABLED
 
     if (config.mainsVoltage == 0) {
         config.mainsVoltage = 230;
@@ -350,24 +339,16 @@ void loadConfigData () {
     //SPIFFS.format();     // Borra el sistema de archivos, solo para pruebas
 
     //read configuration from FS json
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Montando sistema de archivos...\n");
-#endif // DEBUG_ENABLED
 
     if (SPIFFS.begin ()) {
-#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Sistema de archivos montado. Abriendo %s\n", configFileName);
-#endif // DEBUG_ENABLED
         if (SPIFFS.exists (configFileName)) {
             //file exists, reading and loading
-#ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "Leyendo el archivo de configuración: %s\n", configFileName);
-#endif // DEBUG_ENABLED
             File configFile = SPIFFS.open (configFileName, "r");
             if (configFile) {
-#ifdef DEBUG_ENABLED
                 debugPrintf (Debug.INFO, "Archivo de configuración abierto\n");
-#endif // DEBUG_ENABLED
                 size_t size = configFile.size ();
                 // Allocate a buffer to store contents of the file.
                 std::unique_ptr<char[]> buf (new char[size]);
@@ -380,50 +361,38 @@ void loadConfigData () {
                     json.printTo (Debug);
 #endif // DEBUG_ENABLED
                 if (json.success ()) {
-#ifdef DEBUG_ENABLED
                     debugPrintf (Debug.INFO, "\nparsed json\n");
-#endif // DEBUG_ENABLED
 
                     config.emonCMSserverAddress = json.get<String> ("emonCMSserver");
                     config.emonCMSserverPath = json.get<String> ("emonCMSpath");
                     config.emonCMSwriteApiKey = json.get<String> ("emonCMSapiKey");
                     config.mainsVoltage = json.get<int> ("mainsVoltage");
 
-#ifdef DEBUG_ENABLED
                     debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", config.emonCMSserverAddress.c_str ());
                     debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", config.emonCMSserverPath.c_str ());
                     debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", config.emonCMSwriteApiKey.c_str ());
                     debugPrintf (Debug.INFO, "mainsVoltage: %d\n", config.mainsVoltage);
-#endif // DEBUG_ENABLED
 
                     //strcpy (mqtt_port, json["mqtt_port"]);
                     //strcpy (blynk_token, json["blynk_token"]);
                     if (config.emonCMSserverAddress != "" && config.emonCMSwriteApiKey != "")
                         configLoaded = true;
                 } 
-#ifdef DEBUG_ENABLED
                 else {
                     debugPrintf (Debug.INFO, "Error al leer el archivo de configuración\n");
                 }
-#endif // DEBUG_ENABLED
             } 
-#ifdef DEBUG_ENABLED
             else {
                 debugPrintf (Debug.INFO, "Error al abrir el archivo de configuración\n");
             }
-#endif // DEBUG_ENABLED
         } 
-#ifdef DEBUG_ENABLED
         else {
             debugPrintf (Debug.INFO, "El archivo de configuración no existe\n");
         }
-#endif // DEBUG_ENABLED
 
         SPIFFS.end ();
     } else {
-#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Error al abrir el sistema de archivos. Formateando\n");
-#endif // DEBUG_ENABLED
         SPIFFS.format ();
         SPIFFS.end ();
         ESP.reset ();
@@ -436,9 +405,7 @@ void loadConfigData () {
 @brief Guarda los datos de configuración en el sistema de archivos SPIFFS, desde la flash.
 */
 void saveConfigData () {
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "saving config\n");
-#endif // DEBUG_ENABLED
     if (SPIFFS.begin ()) {
         DynamicJsonBuffer jsonBuffer;
         JsonObject& json = jsonBuffer.createObject ();
@@ -449,9 +416,7 @@ void saveConfigData () {
 
         File configFile = SPIFFS.open (configFileName, "w");
         if (!configFile) {
-#ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "Error al abrir el archivo de configuración\n");
-#endif // DEBUG_ENABLED
             return;
         }
 
@@ -461,11 +426,9 @@ void saveConfigData () {
         json.printTo (configFile);
         configFile.close ();
     } 
-#ifdef DEBUG_ENABLED
     else {
         debugPrintf (Debug.INFO, "Error al montar el sistema de archivos\n");
     }
-#endif // DEBUG_ENABLED
     SPIFFS.end ();
     //end save
 }
@@ -488,9 +451,7 @@ Conmuta el funcionamiento del ventilador
 */
 void button_click () {
     fanEnabled = !fanEnabled;
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Ventilador %s\n", fanEnabled ? "activado" : "desactivado");
-#endif // DEBUG_ENABLED
 }
 
 #ifdef WIFI_MANAGER
@@ -501,9 +462,7 @@ Reinicia el dispositivo a la configuración de fábrica y lo reinicia para que p
 de nuevo los datos de configuración al usuario
 */
 void long_click () {
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "---------------Reset config\n");
-#endif // DEBUG_ENABLED
     //wifiManager.resetSettings ();
     WiFi.disconnect (true);
     delay (1000);
@@ -554,15 +513,11 @@ void setup () {
     //--------------------- Conectar a la red WiFi -------------------------
     WiFi.begin (WIFI_SSID, WIFI_PASS);
 
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "Conectando a la red %s ", WIFI_SSID);
-#endif // DEBUG_ENABLED
 
     while (!WiFi.isConnected ()) {
-#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, ".");
         delay (500);
-#endif // DEBUG_ENABLED
     }
     //----------------------------------------------------------------------
 #endif // WIFI_MANAGER
@@ -570,12 +525,12 @@ void setup () {
 
 #ifdef DEBUG_ENABLED
     Debug.begin ("IoTFridgeSaver");
+#endif // DEBUG_ENABLED
 
     debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", config.emonCMSserverAddress.c_str ());
     debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", config.emonCMSserverPath.c_str ());
     debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", config.emonCMSwriteApiKey.c_str ());
     debugPrintf (Debug.INFO, "mainsVoltage: %d\n", config.mainsVoltage);
-#endif // DEBUG_ENABLED
 
     MDNS.begin ("FridgeSaverMonitor"); //Iniciar servidor MDNS para llamar al dispositivo como FridgeSaverMonitor.local
 
@@ -595,9 +550,7 @@ void setup () {
     while (numberOfDevices != NUMBER_OF_SENSORS) {
         numberOfDevices = initTempSensors ();
         if (numberOfDevices != NUMBER_OF_SENSORS) {
-#ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "Error en el numero de sensores: %d\n", numberOfDevices);
-#endif // DEBUG_ENABLED
             //ArduinoOTA.handle ();
             button.tick ();
 #ifdef DEBUG_ENABLED
@@ -642,9 +595,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
 
     // Conecta al servidor
     if (!client.connect (config.emonCMSserverAddress.c_str (), 443)) {
-#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Error al conectar al servidor EmonCMS en %s\n", config.emonCMSserverAddress.c_str ());
-#endif
         return -1; // Error de conexión
     }
 
@@ -666,9 +617,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "}&apikey=" + config.emonCMSwriteApiKey + " HTTP/1.1\r\n";
     httpRequest += "Host: " + config.emonCMSserverAddress + "\r\n\r\n";
 
-#ifdef DEBUG_ENABLED
     debugPrintf (Debug.INFO, "%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
-#endif // DEBUG_ENABLED
 
     // Envia la peticion
     client.print (httpRequest);
@@ -677,9 +626,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     timeout = millis ();
     while (!client.available ()) {
         if (millis () - timeout > maxTimeout) {
-#ifdef DEBUG_ENABLED
             debugPrintf (Debug.INFO, "%s: EmonCMS client Timeout !", __FUNCTION__);
-#endif
             client.stop ();
             return -2; // Timeout
         }
@@ -688,9 +635,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     // Recupera la respuesta
     while (client.available ()) {
         String line = client.readStringUntil ('\n');
-#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "%s: Response: %s\n", __FUNCTION__, line.c_str ());
-#endif
     }
 
     client.stop (); // Desconecta el cliente
@@ -733,14 +678,12 @@ void loop () {
         fridgeWatts = random (0,100);
 #endif
 
-#ifdef DEBUG_ENABLED
         debugPrintf (Debug.INFO, "Temperatura radiador: %f\n", temperatures[tempRadiator_idx]);
         debugPrintf (Debug.INFO, "Temperatura ambiente: %f\n", temperatures[tempAmbient_idx]);
         debugPrintf (Debug.INFO, "Temperatura frigorifico: %f\n", temperatures[tempFridge_idx]);
         debugPrintf (Debug.INFO, "Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
         debugPrintf (Debug.INFO, "Consumo frigorífico: %f\n", fridgeWatts);
         debugPrintf (Debug.INFO, "Consumo total: %f\n", houseWatts);
-#endif // DEBUG_ENABLED
 
         sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
 
