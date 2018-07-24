@@ -559,7 +559,7 @@ de nuevo los datos de configuración al usuario
 */
 void long_click () {
     debugPrintf (Debug.INFO, "---------------Reset config\n");
-    //wifiManager.resetSettings ();
+    wifiManager.resetSettings ();
     WiFi.disconnect (true);
     delay (1000);
     ESP.reset ();
@@ -630,6 +630,7 @@ void setup () {
 #else
     Debug.showColors (true); // Habilita los colores si la salida no es Serie, ya que no funciona bien.
 #endif // DEBUG_SERIAL
+	Debug.setResetCmdEnabled (true);
 #endif // DEBUG_ENABLED
 
 #ifdef WIFI_MANAGER
