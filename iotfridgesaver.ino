@@ -189,7 +189,7 @@ void reconnect () {
         if (mqttClient.connect ("IotFridgeSaver")) {
             debugPrintf (Debug.INFO, "connected\n");
             // Once connected, publish an announcement...
-            mqttClient.publish ("outTopic", "IotFridgeSaver/hello world");
+            mqttClient.publish ("outTopic", "iotfridgesaver/hello world");
             // ... and resubscribe
             //mqttClient.subscribe("inTopic");
 #ifdef MQTT_POWER_INPUT
@@ -566,6 +566,19 @@ void long_click () {
 }
 #endif // WIFI_MANAGER
 
+#ifdef DEBUG_ENABLED
+void debugCmd () {
+	String lastCmd = Debug.getLastCommand ();
+	debugPrintf (Debug.DEBUG, "Último comando: %s \n", lastCmd.c_str ());
+	debugPrintf (Debug.INFO, "Activando portal de configuración\n");
+	if (lastCmd == "rconfig") {
+		//wifiManager.init ();
+		//startWifiManager (wifiManager);
+		wifiManager.startConfigPortal ();
+	}
+}
+#endif // DEBUG_ENABLED
+
 /*void processSyncEvent (NTPSyncEvent_t ntpEvent) {
     if (ntpEvent) {
         debugPrintf (Debug.INFO, "%s Time Sync error: ", __FUNCTION__);
@@ -630,7 +643,10 @@ void setup () {
 #else
     Debug.showColors (true); // Habilita los colores si la salida no es Serie, ya que no funciona bien.
 #endif // DEBUG_SERIAL
+	String help = "rconfig -> activar interfaz web de configuración\n";
 	Debug.setResetCmdEnabled (true);
+	Debug.setHelpProjectsCmds (help);
+	Debug.setCallBackProjectCmds (debugCmd);
 #endif // DEBUG_ENABLED
 
 #ifdef WIFI_MANAGER
@@ -762,7 +778,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
                         int fanOn) {
 
     WiFiClientSecure client; // Cliente TCP con SSL
-    const unsigned int maxTimeout = 5000; // Tiempo maximo de espera a la respuesta del servidor
+    const unsigned int maxTimeout = 2000; // Tiempo maximo de espera a la respuesta del servidor
     unsigned long timeout; // Contador para acumilar el tiempo de espera
     char tempStr[10]; // Cadena temporal para almacenar los numeros como texto
 
@@ -867,7 +883,6 @@ void loop () {
         debugPrintf (Debug.INFO, "Consumo frigorífico: %f\n", fridgeWatts);
         debugPrintf (Debug.INFO, "Consumo total: %f\n", houseWatts);
 
-        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
 #ifdef MQTT_FEED_SEND
         mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str());
         mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
@@ -877,6 +892,8 @@ void loop () {
         mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
         mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
 #endif // MQTT_FEED_SEND
+
+		sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
 
     }
 
@@ -890,5 +907,15 @@ void loop () {
 
     }
 #endif
+
+#ifdef WIFI_MANAGER
+	if (shouldSaveConfig) {
+		shouldSaveConfig = false;
+		getCustomData (wifiManager);
+
+		//	guardar datos en flash
+		saveConfigData ();
+	}
+#endif // WIFI_MANAGER
 
 }
