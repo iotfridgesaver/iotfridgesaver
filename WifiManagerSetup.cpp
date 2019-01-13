@@ -47,6 +47,8 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     _MQTTserverCParam = new WiFiManagerParameter ("mqtt_server", "MQTT server", "", MAX_STRING_LENGTH);
     _MQTTportCParam = new WiFiManagerParameter ("mqtt_port", "MQTT server port", "1883", MAX_STRING_LENGTH);
+    _MQTTloginCParam = new WiFiManagerParameter ("mqtt_login", "MQTT User", "", MAX_STRING_LENGTH);
+    _MQTTpasswdCParam = new WiFiManagerParameter ("mqtt_password", "MQTT Password", "", MAX_STRING_LENGTH);
 #ifdef MQTT_POWER_INPUT
     _MQTTfridgeTopicCParam = new WiFiManagerParameter ("mqtt_fridge_topic", "Fridge MQTT topic", "", MAX_STRING_LENGTH);
     _MQTTtotalTopicCParam = new WiFiManagerParameter ("mqtt_total_topic", "House MQTT topic", "", MAX_STRING_LENGTH);
@@ -63,6 +65,8 @@ void MyWiFiManager::init() { ///< Inicia el servidor WiFiManager con los paráme
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     addParameter (_MQTTserverCParam);
     addParameter (_MQTTportCParam);
+    addParameter (_MQTTloginCParam);
+    addParameter (_MQTTpasswdCParam);
 #ifdef MQTT_POWER_INPUT
     addParameter (_MQTTfridgeTopicCParam);
     addParameter (_MQTTtotalTopicCParam);
@@ -88,6 +92,15 @@ int16_t MyWiFiManager::getMQTTport () {
     return atoi (charStr);
 }
 
+String MyWiFiManager::getMQTTlogin () {
+    const char * charStr = _MQTTloginCParam->getValue ();
+    return String (charStr);
+}
+
+String MyWiFiManager::getMQTTpasswd () {
+    const char * charStr = _MQTTpasswdCParam->getValue ();
+    return String (charStr);
+}
 #ifdef MQTT_POWER_INPUT
 String MyWiFiManager::getFridgeMQTTtopic () {
     const char * charStr = _MQTTfridgeTopicCParam->getValue ();

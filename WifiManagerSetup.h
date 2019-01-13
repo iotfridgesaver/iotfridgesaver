@@ -39,6 +39,8 @@ protected:
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     WiFiManagerParameter * _MQTTserverCParam;
     WiFiManagerParameter * _MQTTportCParam;
+    WiFiManagerParameter * _MQTTloginCParam;
+    WiFiManagerParameter * _MQTTpasswdCParam;
 #ifdef MQTT_POWER_INPUT
     WiFiManagerParameter * _MQTTfridgeTopicCParam;
     WiFiManagerParameter * _MQTTtotalTopicCParam;
@@ -59,6 +61,8 @@ public:
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     String getMQTTserver ();            ///< Obtiene la dirección del servidor MQTT
     int16_t getMQTTport ();             ///< Obtiene el puerto del servidor MQTT
+    String getMQTTlogin ();
+    String getMQTTpasswd ();
 #ifdef MQTT_POWER_INPUT
     String getFridgeMQTTtopic ();       ///< Obtiene el topic del consumo del frigorífico
     String getTotalMQTTtopic ();        ///< Obtiene el topic del consumo total de la vivienda

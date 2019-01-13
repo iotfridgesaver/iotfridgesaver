@@ -17,7 +17,7 @@
 
 #define DEBUG_ENABLED   ///<\~Spanish Activa la salida de debug por Telnet
 #ifdef DEBUG_ENABLED
-#define DEBUG_SERIAL    ///<\~Spanish Activa la salida de debug por puerto serie
+//#define DEBUG_SERIAL    ///<\~Spanish Activa la salida de debug por puerto serie
 #endif // DEBUG_ENABLED
 
 #define WIFI_MANAGER    ///<\~Spanish Activa la configuración con WiFiManager
@@ -44,7 +44,9 @@ typedef struct {
     int mainsVoltage;                  ///<\~Spanish Tensión de alimentación
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     String mqttServerName;             ///<\~Spanish Nombre del servidor MQTT
-    uint16_t mqttServerPort;         ///<\~Spanish Puerto del ervidor MQTT
+    uint16_t mqttServerPort;         ///<\~Spanish Puerto del servidor MQTT
+    String mqttLogin;         ///<\~Spanish Usuario del servidor MQTT
+    String mqttPasswd;         ///<\~Spanish Contraseña del servidor MQTT
 #ifdef MQTT_POWER_INPUT
     String mqttFridgePowerTopic;       ///<\~Spanish Topic del consumo del frigorífico
     String mqttTotalPowerTopic;        ///<\~Spanish Topic del consumo total de la vivienda

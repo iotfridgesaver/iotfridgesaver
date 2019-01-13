@@ -94,6 +94,8 @@ config_t config = { ///<\~Spanish Configuración del dispositivo
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     "BROKER_MQTT",      // mqttServerName
     1883,               // mqttServerPort
+    "",                 // mqttLogin
+    "",                 // mqttPasswd
 #ifdef MQTT_POWER_INPUT
     "TOPIC_CONSUMO_FRIGO",       // mqttFridgePowerTopic
     "TOPIC_CONSUMO_TOTAL_CASA",  // mqttTotalPowerTopic
@@ -109,6 +111,8 @@ config_t config = { ///<\~Spanish Configuración del dispositivo
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     "",                 // mqttServerName
     1883,               // mqttServerPort
+    "",                 // mqttLogin
+    "",                 // mqttPasswd
 #ifdef MQTT_POWER_INPUT
     "",                 // mqttFridgePowerTopic
     "",                 // mqttTotalPowerTopic
@@ -186,7 +190,7 @@ void reconnect () {
     while (!mqttClient.connected ()) {
         debugPrintf (Debug.INFO, "Attempting MQTT connection...");
         // Attempt to connect
-        if (mqttClient.connect ("IotFridgeSaver")) {
+        if (mqttClient.connect ("IotFridgeSaver",config.mqttLogin.c_str(),config.mqttPasswd.c_str())) {
             debugPrintf (Debug.INFO, "connected\n");
             // Once connected, publish an announcement...
             mqttClient.publish ("outTopic", "iotfridgesaver/hello world");
@@ -440,6 +444,8 @@ void loadConfigData () {
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
                     config.mqttServerName = json.get<String> ("mqttServerName");
                     config.mqttServerPort = json.get<int> ("mqttServerPort");
+                    config.mqttLogin = json.get<String> ("mqttLogin");
+                    config.mqttPasswd = json.get<String> ("mqttPasswd");
 #ifdef MQTT_POWER_INPUT
                     config.mqttFridgePowerTopic = json.get<String> ("mqttFridgePowerTopic");
                     config.mqttTotalPowerTopic = json.get<String> ("mqttTotalPowerTopic");
@@ -504,7 +510,9 @@ void saveConfigData () {
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
         json["mqttServerName"] = config.mqttServerName;
         json["mqttServerPort"] = config.mqttServerPort;
-#ifdef MQTT_POWER_INPUT 
+        json["mqttLogin"] = config.mqttLogin;
+        json["mqttPasswd"] = config.mqttPasswd;
+        #ifdef MQTT_POWER_INPUT 
         json["mqttFridgePowerTopic"] = config.mqttFridgePowerTopic;
         json["mqttTotalPowerTopic"] = config.mqttTotalPowerTopic;
 #endif // MQTT_POWER_INPUT
@@ -698,11 +706,13 @@ void setup () {
 
     debugPrintf (Debug.INFO, "emonCMSserverAddress: %s\n", config.emonCMSserverAddress.c_str ());
     debugPrintf (Debug.INFO, "emonCMSserverPath: %s\n", config.emonCMSserverPath.c_str ());
-    debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", config.emonCMSwriteApiKey.c_str ());
+    //debugPrintf (Debug.INFO, "emonCMSwriteApiKey: %s\n", config.emonCMSwriteApiKey.c_str ());
     debugPrintf (Debug.INFO, "mainsVoltage: %d\n", config.mainsVoltage);
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
     debugPrintf (Debug.INFO, "mqttServerName: %s\n", config.mqttServerName.c_str());
     debugPrintf (Debug.INFO, "mqttServerPort: %d\n", config.mqttServerPort);
+    debugPrintf (Debug.INFO, "mqttLogin: %s\n", config.mqttLogin);
+    //debugPrintf (Debug.INFO, "mqttServerPort: %s\n", config.mqttPasswd);
 #ifdef MQTT_POWER_INPUT
     debugPrintf (Debug.INFO, "mqttFridgePowerTopic: %s\n", config.mqttFridgePowerTopic.c_str());
     debugPrintf (Debug.INFO, "mqttTotalPowerTopic: %s\n", config.mqttTotalPowerTopic.c_str ());
