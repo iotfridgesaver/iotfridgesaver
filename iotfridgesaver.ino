@@ -584,7 +584,7 @@ void long_click () {
 }
 #endif // WIFI_MANAGER
 
-#ifdef DEBUG_ENABLED
+#if defined DEBUG_ENABLED && defined WIFI_MANAGER
 void debugCmd () {
 	String lastCmd = Debug.getLastCommand ();
 	debugPrintf (Debug.VERBOSE, "Último comando: %s \n", lastCmd.c_str ());
@@ -595,7 +595,7 @@ void debugCmd () {
 		wifiManager.startConfigPortal ();
 	}
 }
-#endif // DEBUG_ENABLED
+#endif // DEBUG_ENABLED && WIFI_MANAGER
 
 /*void processSyncEvent (NTPSyncEvent_t ntpEvent) {
     if (ntpEvent) {
@@ -661,10 +661,12 @@ void setup () {
 #else
     Debug.showColors (true); // Habilita los colores si la salida no es Serie, ya que no funciona bien.
 #endif // DEBUG_SERIAL
-	String help = "rconfig -> activar interfaz web de configuración\n";
 	Debug.setResetCmdEnabled (true);
-	Debug.setHelpProjectsCmds (help);
+#ifdef WIFI_MANAGER
+    String help = "rconfig -> activar interfaz web de configuración\n";
+    Debug.setHelpProjectsCmds (help);
 	Debug.setCallBackProjectCmds (debugCmd);
+#endif // WIFI_MANAGER
 #endif // DEBUG_ENABLED
 
 #ifdef WIFI_MANAGER
@@ -957,7 +959,7 @@ void loop () {
 
 #ifdef WIFI_MANAGER
 	if (shouldSaveConfig) {
-		shouldSaveConfig = false;
+        shouldSaveConfig = false;
 		getCustomData (wifiManager);
 
 		//	guardar datos en flash
