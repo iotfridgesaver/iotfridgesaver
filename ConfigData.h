@@ -32,6 +32,7 @@
 #define FAN_ENABLE_BUTTON   D3      ///<\~Spanish Pin donde conectar el botón para activar el ventilador
 #define FAN_PWM_PIN         D1      ///<\~Spanish Pin para el control de la velocidad del ventilador
 #define MEASURE_PERIOD      60000   ///<\~Spanish Periodo de medida de temperatura y consumo en milisegundos, y envío de los datos al servicio en la nube
+#define STATUS_PERIOD       30000   ///<\~Spanish Periodo de envío de estado en milisegundos
 
 const int t_longPress =     10000;   ///<\~Spanish Tiempo en milisegundos para identificar pulsación larga
 

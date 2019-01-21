@@ -63,6 +63,7 @@ uint8_t tempRadiator_idx;               ///<\~Spanish Índice del sensor que mid
 uint8_t tempFridge_idx;                 ///<\~Spanish Índice del sensor que mide la temperatura del frigorífico
 uint8_t tempFreezer_idx;                ///<\~Spanish Índice del sensor que mide la temperatura del congelador
 uint8_t numberOfDevices = 0;            ///<\~Spanish Número de sensores detectados. Debería ser igual a NUMBER_OF_SENSORS
+bool tempOK = true;                     ///<\~Spanish true si son correctas las medidas de temperatura
 
 #define ONE_WIRE_BUS D2                 ///<\~Spanish Pin de datos para los sensores de temperatura. D5 = GPIO16
 #define TEMPERATURE_PRECISION 11        ///<\~Spanish Número de bits con los que se calcula la temperatura
@@ -194,12 +195,13 @@ void reconnect () {
         if (config.mqttLogin == "") {
             result = mqttClient.connect ("IotFridgeSaver");
         } else {
-            result = mqttClient.connect ("IotFridgeSaver", config.mqttLogin.c_str (), config.mqttPasswd.c_str ());
+            result = mqttClient.connect ("IotFridgeSaver", config.mqttLogin.c_str (), config.mqttPasswd.c_str (), "iotfridgesaver/status",0,true,"0",true);
         }
         if (result) {
             debugPrintf (Debug.INFO, "connected\n");
             // Once connected, publish an announcement...
-            mqttClient.publish ("outTopic", "iotfridgesaver/hello world");
+            mqttClient.publish ("iotfridgesaver/hello world", "1");
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s\n", "iotfridgesaver/hello world");
             // ... and resubscribe
             //mqttClient.subscribe("inTopic");
 #ifdef MQTT_POWER_INPUT
@@ -861,12 +863,23 @@ int8_t sendDataEmonCMS (float tempRadiator,
 */
 void loop () {
     static long lastRun = 0;
+    static long lastSentStatus = 0;
 
     ArduinoOTA.handle ();
     button.tick ();
 #ifdef DEBUG_ENABLED
     Debug.handle ();
 #endif // DEBUG_ENABLED
+
+#ifdef MQTT_FEED_SEND
+    if (millis () - lastSentStatus > STATUS_PERIOD) {
+        lastSentStatus = millis ();
+        if (tempOK) {
+            mqttClient.publish ("iotfridgesaver/status", "1", true);
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] iotfridgesaver/status -> 1\n");
+        }
+    }
+#endif // MQTT_FEED_SEND
 
     if (millis () - lastRun > MEASURE_PERIOD) {
         lastRun = millis ();
@@ -900,15 +913,31 @@ void loop () {
         debugPrintf (Debug.INFO, "Temperatura congelador: %f\n", temperatures[tempFreezer_idx]);
         debugPrintf (Debug.INFO, "Consumo frigorífico: %f\n", fridgeWatts);
         debugPrintf (Debug.INFO, "Consumo total: %f\n", houseWatts);
+        tempOK = true;
+        for (int i = 0; i < NUMBER_OF_SENSORS && tempOK; i++) {
+            tempOK = temperatures[i] > -100;
+        } 
 
 #ifdef MQTT_FEED_SEND
-        mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str());
-        mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str ());
-        mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str ());
-        mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str ());
-        mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
-        mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
-        mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
+        if (tempOK) {
+            mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str (), true);
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempRadiator", temperatures[tempRadiator_idx]);
+            mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str (), true);
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempAmbient", temperatures[tempAmbient_idx]);
+            mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str (), true);
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempFridge", temperatures[tempFridge_idx]);
+            mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str (), true);
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempFreezer", temperatures[tempFreezer_idx]);
+            mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/watts", fridgeWatts);
+            mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/wattsTotal", houseWatts);
+            mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %d\n", "iotfridgesaver/fanSpeed", fanSpeed);
+        } else {
+            mqttClient.publish ("iotfridgesaver/status", "0", true);
+            debugPrintf (Debug.VERBOSE, "[MQTT Publish] iotfridgesaver/status -> 0\n");
+        }
 #endif // MQTT_FEED_SEND
 
 		sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
