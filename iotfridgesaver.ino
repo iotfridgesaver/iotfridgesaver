@@ -189,7 +189,7 @@ También se subscribe a los topics de consumo del frigorífico y de la vivienda
 void reconnect () {
     // Loop until we're reconnected
     while (!mqttClient.connected ()) {
-        debugPrintf (Debug.INFO, "Attempting MQTT connection...");
+        debugPrintf (Debug.DEBUG, "Attempting MQTT connection...");
         // Attempt to connect
         bool result = false;
         if (config.mqttLogin == "") {
@@ -198,10 +198,10 @@ void reconnect () {
             result = mqttClient.connect ("IotFridgeSaver", config.mqttLogin.c_str (), config.mqttPasswd.c_str (), "iotfridgesaver/status",0,true,"0",true);
         }
         if (result) {
-            debugPrintf (Debug.INFO, "connected\n");
+            debugPrintf (Debug.DEBUG, "connected\n");
             // Once connected, publish an announcement...
             mqttClient.publish ("iotfridgesaver/hello world", "1");
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s\n", "iotfridgesaver/hello world");
+            debugPrintf (Debug.INFO, "[MQTT Publish] %s\n", "iotfridgesaver/hello world");
             // ... and resubscribe
             //mqttClient.subscribe("inTopic");
 #ifdef MQTT_POWER_INPUT
@@ -209,7 +209,7 @@ void reconnect () {
             mqttClient.subscribe (config.mqttTotalPowerTopic.c_str ());
 #endif // MQTT_POWER_INPUT
         } else {
-            debugPrintf (Debug.INFO, "failed, rc=%d try again in 5 seconds\n", mqttClient.state ());
+            debugPrintf (Debug.ERROR, "failed, rc=%d try again in 5 seconds\n", mqttClient.state ());
             // Wait 5 seconds before retrying
             delay (5000);
         }
@@ -326,7 +326,7 @@ uint8_t initTempSensors () {
     DeviceAddress tempDeviceAddress;    // Almacenamiento temporal para las direcciones encontradas
     uint8_t numberOfDevices;            // Número de sensores encontrados
 
-    debugPrintf (Debug.INFO, "Init Dallas Temperature Control Library\n");
+    debugPrintf (Debug.DEBUG, "Init Dallas Temperature Control Library\n");
 
     // Inicializar el bus de los sensores de temperatura 
     sensors.begin ();
@@ -345,10 +345,10 @@ uint8_t initTempSensors () {
     for (int i = 0; i < numberOfDevices; i++) {
         // Search the wire for address
         if (sensors.getAddress (tempDeviceAddress, i)) {
-            debugPrintf (Debug.INFO, "Found device %u. Setting resolution to %d\n", i, TEMPERATURE_PRECISION);
-            debugPrintf (Debug.INFO, "Resolution actually set to: %u\n", sensors.getResolution (tempDeviceAddress));
+            debugPrintf (Debug.DEBUG, "Found device %u. Setting resolution to %d\n", i, TEMPERATURE_PRECISION);
+            debugPrintf (Debug.DEBUG, "Resolution actually set to: %u\n", sensors.getResolution (tempDeviceAddress));
         } else {
-            debugPrintf (Debug.INFO, "Found ghost device at %u but could not detect address. Check power and cabling\n", i);
+            debugPrintf (Debug.DEBUG, "Found ghost device at %u but could not detect address. Check power and cabling\n", i);
         }
 
     }
@@ -482,20 +482,20 @@ void loadConfigData () {
                         configLoaded = true;
                 } 
                 else {
-                    debugPrintf (Debug.INFO, "Error al leer el archivo de configuración\n");
+                    debugPrintf (Debug.ERROR, "Error al leer el archivo de configuración\n");
                 }
             } 
             else {
-                debugPrintf (Debug.INFO, "Error al abrir el archivo de configuración\n");
+                debugPrintf (Debug.ERROR, "Error al abrir el archivo de configuración\n");
             }
         } 
         else {
-            debugPrintf (Debug.INFO, "El archivo de configuración no existe\n");
+            debugPrintf (Debug.ERROR, "El archivo de configuración no existe\n");
         }
 
         SPIFFS.end ();
     } else {
-        debugPrintf (Debug.INFO, "Error al abrir el sistema de archivos. Formateando\n");
+        debugPrintf (Debug.ERROR, "Error al abrir el sistema de archivos. Formateando\n");
         SPIFFS.format ();
         SPIFFS.end ();
         ESP.reset ();
@@ -530,7 +530,7 @@ void saveConfigData () {
 
         File configFile = SPIFFS.open (configFileName, "w");
         if (!configFile) {
-            debugPrintf (Debug.INFO, "Error al abrir el archivo de configuración\n");
+            debugPrintf (Debug.ERROR, "Error al abrir el archivo de configuración\n");
             return;
         }
 
@@ -541,7 +541,7 @@ void saveConfigData () {
         configFile.close ();
     } 
     else {
-        debugPrintf (Debug.INFO, "Error al montar el sistema de archivos\n");
+        debugPrintf (Debug.ERROR, "Error al montar el sistema de archivos\n");
     }
     SPIFFS.end ();
     //end save
@@ -587,10 +587,10 @@ void long_click () {
 #ifdef DEBUG_ENABLED
 void debugCmd () {
 	String lastCmd = Debug.getLastCommand ();
-	debugPrintf (Debug.DEBUG, "Último comando: %s \n", lastCmd.c_str ());
-	debugPrintf (Debug.INFO, "Activando portal de configuración\n");
+	debugPrintf (Debug.VERBOSE, "Último comando: %s \n", lastCmd.c_str ());
 	if (lastCmd == "rconfig") {
-		//wifiManager.init ();
+        debugPrintf (Debug.INFO, "Activando portal de configuración\n");
+        //wifiManager.init ();
 		//startWifiManager (wifiManager);
 		wifiManager.startConfigPortal ();
 	}
@@ -630,11 +630,11 @@ void getPowerMeasurement (char* topic, byte* payload, unsigned int length) {
     
     if (!strcmp(topic, config.mqttFridgePowerTopic.c_str())) {
         fridgeWatts = strtod (powerStr.c_str(), NULL);
-        debugPrintf (Debug.INFO, "Valor traducido %f\n", fridgeWatts);
+        debugPrintf (Debug.VERBOSE, "Translated value %f\n", fridgeWatts);
     }
     else if (!strcmp (topic, config.mqttTotalPowerTopic.c_str ())) {
         houseWatts = strtod (powerStr.c_str (), NULL);
-        debugPrintf (Debug.INFO, "Valor traducido %f\n", houseWatts);
+        debugPrintf (Debug.VERBOSE, "Translated value %f\n", houseWatts);
     }
 
 }
@@ -757,7 +757,7 @@ void setup () {
     while (numberOfDevices != NUMBER_OF_SENSORS) {
         numberOfDevices = initTempSensors ();
         if (numberOfDevices != NUMBER_OF_SENSORS) {
-            debugPrintf (Debug.INFO, "Error en el numero de sensores: %d\n", numberOfDevices);
+            debugPrintf (Debug.ERROR, "Error en el numero de sensores: %d\n", numberOfDevices);
             //ArduinoOTA.handle ();
             button.tick ();
 #ifdef DEBUG_ENABLED
@@ -804,24 +804,26 @@ int8_t sendDataEmonCMS (float tempRadiator,
 
     // Conecta al servidor
     if (!client.connect (config.emonCMSserverAddress.c_str (), 443)) {
-        debugPrintf (Debug.INFO, "Error al conectar al servidor EmonCMS en %s\n", config.emonCMSserverAddress.c_str ());
+        debugPrintf (Debug.ERROR, "Error al conectar al servidor EmonCMS en %s\n", config.emonCMSserverAddress.c_str ());
         return -1; // Error de conexión
     }
 
     // Compone la peticion HTTP
     String httpRequest = "GET "+ config.emonCMSserverPath +"/input/post.json?node=IoTFridgeSaver&fulljson={";
-    dtostrf (tempRadiator, 3, 3, tempStr);
-    httpRequest += "\"tempRadiator\":" + String (tempStr) + ",";
-    dtostrf (tempAmbient, 3, 3, tempStr);
-    httpRequest += "\"tempAmbient\":" + String (tempStr) + ",";
-    /*if (aveTempAmbient > -100) {
+    if (tempOK) {
+        dtostrf (tempRadiator, 3, 3, tempStr);
+        httpRequest += "\"tempRadiator\":" + String (tempStr) + ",";
         dtostrf (tempAmbient, 3, 3, tempStr);
-        httpRequest += "\"tempAmbient_ave\":" + String (tempStr) + ",";
-    }*/
-    dtostrf (tempFridge, 3, 3, tempStr);
-    httpRequest += "\"tempFridge\":" + String (tempStr) + ",";
-    dtostrf (tempFreezer, 3, 3, tempStr);
-    httpRequest += "\"tempFreezer\":" + String (tempStr) + ",";
+        httpRequest += "\"tempAmbient\":" + String (tempStr) + ",";
+        /*if (aveTempAmbient > -100) {
+            dtostrf (tempAmbient, 3, 3, tempStr);
+            httpRequest += "\"tempAmbient_ave\":" + String (tempStr) + ",";
+        }*/
+        dtostrf (tempFridge, 3, 3, tempStr);
+        httpRequest += "\"tempFridge\":" + String (tempStr) + ",";
+        dtostrf (tempFreezer, 3, 3, tempStr);
+        httpRequest += "\"tempFreezer\":" + String (tempStr) + ",";
+    }
     dtostrf (watts, 3, 3, tempStr);
     httpRequest += "\"watts\":" + String (tempStr) + ",";
     dtostrf (totalWatts, 3, 3, tempStr);
@@ -830,7 +832,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     httpRequest += "}&apikey=" + config.emonCMSwriteApiKey + " HTTP/1.1\r\n";
     httpRequest += "Host: " + config.emonCMSserverAddress + "\r\n\r\n";
 
-    debugPrintf (Debug.INFO, "%s: Request; ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
+    debugPrintf (Debug.VERBOSE, "%s: Request: ->\n %s\n", __FUNCTION__, httpRequest.c_str ());
 
     // Envia la peticion
     client.print (httpRequest);
@@ -839,7 +841,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     timeout = millis ();
     while (!client.available ()) {
         if (millis () - timeout > maxTimeout) {
-            debugPrintf (Debug.INFO, "%s: EmonCMS client Timeout !", __FUNCTION__);
+            debugPrintf (Debug.ERROR, "%s: EmonCMS client Timeout !", __FUNCTION__);
             client.stop ();
             return -2; // Timeout
         }
@@ -848,7 +850,7 @@ int8_t sendDataEmonCMS (float tempRadiator,
     // Recupera la respuesta
     while (client.available ()) {
         String line = client.readStringUntil ('\n');
-        debugPrintf (Debug.INFO, "%s: Response: %s\n", __FUNCTION__, line.c_str ());
+        debugPrintf (Debug.DEBUG, "%s: Response: %s\n", __FUNCTION__, line.c_str ());
     }
 
     client.stop (); // Desconecta el cliente
@@ -876,7 +878,7 @@ void loop () {
         lastSentStatus = millis ();
         if (tempOK) {
             mqttClient.publish ("iotfridgesaver/status", "1", true);
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] iotfridgesaver/status -> 1\n");
+            debugPrintf (Debug.INFO, "[MQTT Publish] iotfridgesaver/status -> 1\n");
         }
     }
 #endif // MQTT_FEED_SEND
@@ -921,27 +923,25 @@ void loop () {
 #ifdef MQTT_FEED_SEND
         if (tempOK) {
             mqttClient.publish ("iotfridgesaver/tempRadiator", String (temperatures[tempRadiator_idx]).c_str (), true);
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempRadiator", temperatures[tempRadiator_idx]);
+            debugPrintf (Debug.INFO, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempRadiator", temperatures[tempRadiator_idx]);
             mqttClient.publish ("iotfridgesaver/tempAmbient", String (temperatures[tempAmbient_idx]).c_str (), true);
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempAmbient", temperatures[tempAmbient_idx]);
+            debugPrintf (Debug.INFO, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempAmbient", temperatures[tempAmbient_idx]);
             mqttClient.publish ("iotfridgesaver/tempFridge", String (temperatures[tempFridge_idx]).c_str (), true);
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempFridge", temperatures[tempFridge_idx]);
+            debugPrintf (Debug.INFO, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempFridge", temperatures[tempFridge_idx]);
             mqttClient.publish ("iotfridgesaver/tempFreezer", String (temperatures[tempFreezer_idx]).c_str (), true);
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempFreezer", temperatures[tempFreezer_idx]);
-            mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/watts", fridgeWatts);
-            mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/wattsTotal", houseWatts);
-            mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] %s -> %d\n", "iotfridgesaver/fanSpeed", fanSpeed);
+            debugPrintf (Debug.INFO, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/tempFreezer", temperatures[tempFreezer_idx]);
         } else {
             mqttClient.publish ("iotfridgesaver/status", "0", true);
-            debugPrintf (Debug.VERBOSE, "[MQTT Publish] iotfridgesaver/status -> 0\n");
+            debugPrintf (Debug.INFO, "[MQTT Publish] iotfridgesaver/status -> 0\n");
         }
+        mqttClient.publish ("iotfridgesaver/watts", String (fridgeWatts).c_str ());
+        debugPrintf (Debug.INFO, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/watts", fridgeWatts);
+        mqttClient.publish ("iotfridgesaver/wattsTotal", String (houseWatts).c_str ());
+        debugPrintf (Debug.INFO, "[MQTT Publish] %s -> %f\n", "iotfridgesaver/wattsTotal", houseWatts);
+        mqttClient.publish ("iotfridgesaver/fanSpeed", String (fanSpeed).c_str ());
+        debugPrintf (Debug.INFO, "[MQTT Publish] %s -> %d\n", "iotfridgesaver/fanSpeed", fanSpeed);
 #endif // MQTT_FEED_SEND
-
-		sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
-
+        sendDataEmonCMS (temperatures[tempRadiator_idx], temperatures[tempAmbient_idx], temperatures[tempFridge_idx], temperatures[tempFreezer_idx], fridgeWatts, houseWatts, fanSpeed);
     }
 
 #if defined MQTT_POWER_INPUT || defined MQTT_FEED_SEND
